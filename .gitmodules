@@ -1,3 +1,6 @@
 [submodule "Libraries/RaspberryPiSSH"]
 	path = Libraries/RaspberryPiSSH
 	url = https://github.com/gloveboxes/Raspberry-Pi-with-Visual-Studio-Code-Remote-SSH-and-C-or-C-Development
+[submodule "Libraries/YDLidar"]
+	path = Libraries/YDLidar
+	url = https://github.com/YDLIDAR/YDLidar-SDK
