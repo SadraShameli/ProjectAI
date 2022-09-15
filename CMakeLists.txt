@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++20")
 
-add_subdirectory(Libraries/YDLidar)
 add_subdirectory(Source)
+add_subdirectory(Libraries/YDLidar)
 
 target_link_libraries(ProjectAI ydlidar_sdk)

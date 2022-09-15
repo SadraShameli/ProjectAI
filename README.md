@@ -1,1 +1,1 @@
-# Project-A.I.
+# ProjectAI.
