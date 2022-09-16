@@ -1,3 +1,6 @@
+# Main Source Files
 add_subdirectory(src)
+target_include_directories(ProjectAI PRIVATE include)
 
-target_include_directories(ProjectAI PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/includes")
+# Add PreCompiled Header
+target_precompile_headers(ProjectAI PUBLIC include/CommonHeaders.h)
