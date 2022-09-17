@@ -4,6 +4,3 @@
 [submodule "Libraries/YDLidar"]
 	path = Libraries/YDLidar
 	url = https://github.com/YDLIDAR/YDLidar-SDK
-[submodule "Libraries/spdlog"]
-	path = Libraries/spdlog
-	url = https://github.com/gabime/spdlog.git
