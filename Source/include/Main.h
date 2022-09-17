@@ -9,10 +9,10 @@ namespace ProjectAI
     public:
         Application();
         ~Application();
-
-        Application &Get();
+        static Application &Get();
 
         void Run();
+        void Close();
 
     private:
         static inline Application *m_Instance = nullptr;

@@ -1,4 +1,7 @@
 #include "Lidar.h"
+#include "Log.h"
+
+#include <glm/glm.hpp>
 
 namespace ProjectAI
 {
@@ -95,14 +98,14 @@ namespace ProjectAI
         auto lidarPortList = ydlidar::lidarPortList();
         for (auto &port : lidarPortList)
         {
-            std::cout << "YDLidar device has been found - [Port: " << port.second << ", Version: " << port.first << "]\n";
+            CORE_INFO("YDLidar device has been found - [Port: {0}, Version: {1}", port.second, port.first);
             m_Lidar.setlidaropt(LidarPropSerialPort, port.second.c_str(), port.second.size());
 
             // Try to initialize SDK and LiDAR
             if (m_Lidar.initialize() && m_Lidar.turnOn())
                 return true;
             else
-                std::cout << m_Lidar.DescribeError() << "\n";
+                CORE_ERROR(m_Lidar.DescribeError());
         }
 
         return false;
@@ -115,11 +118,25 @@ namespace ProjectAI
             LaserScan scan;
             if (m_Lidar.doProcessSimple(scan))
             {
-                printf("Scan received: %u ranges at [%f]Hz\n", (unsigned int)scan.points.size(), 1.0 / scan.config.scan_time);
+                CORE_INFO("Scan received: {0} ranges at {1}Hz", scan.points.size(), 1.0 / scan.config.scan_time);
+
+                auto max = std::begin(scan.points);
+                for (auto it = scan.points.begin(); it != scan.points.end(); ++it)
+                {
+                    // CORE_INFO("{0} : {1} ", point.angle * (180 / M_PI), point.range);
+                    if (it->range > max->range)
+                        max = it;
+                }
+
+                CORE_INFO("{0} : {1}", glm::degrees(max->angle), max->range);
+
+                // std::map<float, int> map;
+                // map[]
+
                 return true;
             }
             else
-                printf("Failed to get Lidar Data\n");
+                CORE_ERROR("Failed to get Lidar Data");
         }
 
         return false;

@@ -8,11 +8,19 @@ set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 # Setting C++ Standards
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++20")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++20 ")
 
 # Main Source Files
 add_subdirectory(Source)
 
-# YDLidar Library
+# YDLidar 
 add_subdirectory(Libraries/YDLidar)
 target_link_libraries(ProjectAI ydlidar_sdk)
+
+# spdlog 
+add_subdirectory(Libraries/spdlog)
+target_include_directories(ProjectAI PRIVATE Libraries/spdlog/include)
+
+# glm 
+add_subdirectory(Libraries/glm)
+target_include_directories(ProjectAI PRIVATE Libraries/glm)
