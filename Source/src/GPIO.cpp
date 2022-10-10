@@ -1,19 +1,20 @@
 #include "GPIO.h"
 #include <pigpio.h>
 
-struct Pin
-{
-    gpio tag;
-    clock_t updateTime;
-    int interval;
-    bool continuous;
-    bool state = false;
-    Pin(GPIO::Outputs _tag) : tag((gpio)_tag) {}
-};
-static Pin s_Pins[]{GPIO::Outputs::Motor1, GPIO::Outputs::Motor2, GPIO::Outputs::SteeringPWM};
-
 namespace ProjectAI
 {
+    struct Pin
+    {
+        int tag;
+        clock_t updateTime;
+        int interval;
+        bool continuous;
+        bool state = false;
+        Pin(GPIO::Outputs _tag) : tag((int)_tag) {}
+    };
+
+    static Pin s_Pins[]{GPIO::Outputs::Motor1, GPIO::Outputs::Motor2, GPIO::Outputs::SteeringPWM};
+
     void GPIO::Init()
     {
         gpioInitialise();

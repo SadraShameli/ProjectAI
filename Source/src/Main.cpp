@@ -33,6 +33,9 @@ namespace ProjectAI
         // Terminal Signal event listener
         signal(SIGINT, signal_callback_handler);
 
+        // Initializing GPIO
+        GPIO::Init();
+
         // Lidar SDK
         Lidar::Init();
         if (!Lidar::Connect())
@@ -49,7 +52,7 @@ namespace ProjectAI
     Application::~Application()
     {
         ScopedTimer timer("Releasing resources");
-        
+
         if (m_Running)
             Close();
 
@@ -70,9 +73,15 @@ namespace ProjectAI
 
     void Application::Run()
     {
+        GPIO::Toggle(GPIO::Motor1, true);
+        GPIO::Toggle(GPIO::Motor2, false);
+
         while (m_Running)
         {
             ScopedTimer timer("Runtime");
+
+            // Runtime
+            GPIO::Update();
             Lidar::Scan();
         }
     }
