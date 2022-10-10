@@ -5,7 +5,7 @@
 
 namespace ProjectAI
 {
-    Lidar::Lidar()
+    void Lidar::Init()
     {
         ydlidar::os_init();
 
@@ -85,7 +85,7 @@ namespace ProjectAI
         m_Lidar.enableSunNoise(false);
     }
 
-    Lidar::~Lidar()
+    void Lidar::Destroy()
     {
         m_Lidar.turnOff();
         m_Lidar.disconnecting();
@@ -98,7 +98,7 @@ namespace ProjectAI
         auto lidarPortList = ydlidar::lidarPortList();
         for (auto &port : lidarPortList)
         {
-            CORE_INFO("YDLidar device has been found - [Port: {0}, Version: {1}", port.second, port.first);
+            CORE_INFO("YDLidar device has been found - [Port: {0}, Version: {1}]", port.second, port.first);
             m_Lidar.setlidaropt(LidarPropSerialPort, port.second.c_str(), port.second.size());
 
             // Try to initialize SDK and LiDAR
@@ -118,12 +118,12 @@ namespace ProjectAI
             LaserScan scan;
             if (m_Lidar.doProcessSimple(scan))
             {
-                CORE_INFO("Scan received: {0} ranges at {1}Hz", scan.points.size(), 1.0 / scan.config.scan_time);
+                CORE_INFO("Scan received: {0} ranges at {1}Hz", scan.points.size(), 1.0f / scan.config.scan_time);
 
                 auto max = std::begin(scan.points);
                 for (auto it = scan.points.begin(); it != scan.points.end(); ++it)
                 {
-                    // CORE_INFO("{0} : {1} ", point.angle * (180 / M_PI), point.range);
+                    // CORE_INFO("{0} : {1}", point.angle * (180 / M_PI), point.range);
                     if (it->range > max->range)
                         max = it;
                 }

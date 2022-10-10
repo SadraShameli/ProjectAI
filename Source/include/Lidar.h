@@ -7,13 +7,13 @@ namespace ProjectAI
     class Lidar
     {
     public:
-        Lidar();
-        ~Lidar();
+        static void Init();
+        static void Destroy();
 
-        bool Connect();
-        bool Scan();
+        static bool Connect();
+        static bool Scan();
 
     private:
-        CYdLidar m_Lidar;
+        static inline CYdLidar m_Lidar;
     };
 }

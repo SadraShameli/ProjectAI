@@ -1,4 +1,4 @@
-# Adding Main.cpp as excutable file
+# Adding Main.cpp and all .cpp files as excutable file
 
 file(GLOB SRC_FILES *.cpp)
-add_executable(ProjectAI Main.cpp ${SRC_FILES})
+add_executable(ProjectAI ${SRC_FILES})

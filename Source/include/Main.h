@@ -16,7 +16,6 @@ namespace ProjectAI
 
     private:
         static inline Application *m_Instance = nullptr;
-        Lidar m_Lidar;
 
         bool m_Running;
     };

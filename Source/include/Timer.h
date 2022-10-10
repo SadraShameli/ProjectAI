@@ -4,15 +4,15 @@
 
 namespace ProjectAI
 {
-	class Timer
+	class ScopedTimer
 	{
 	public:
-		Timer(const char *name)
+		ScopedTimer(const char *name)
 		{
 			m_Name = name;
 			Reset();
 		}
-		~Timer() { CORE_INFO("{0} done in {1} milliseconds\n", m_Name, ElapsedMillis()); }
+		~ScopedTimer() { CORE_WARN("{0} done in {1} milliseconds\n", m_Name, ElapsedMillis()); }
 
 		void Reset() { m_Start = std::chrono::high_resolution_clock::now(); }
 

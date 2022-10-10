@@ -1,29 +1,66 @@
 #include "Main.h"
 #include "Timer.h"
 #include "Log.h"
+#include "GPIO.h"
 
 namespace ProjectAI
 {
     static void signal_callback_handler(int signum)
     {
-        CORE_ERROR("Terminating");
-        Application::Get().Close();
+        switch (signum)
+        {
+        case SIGINT:
+            CORE_WARN("Terminating");
+            Application::Get().Close();
+            break;
+
+        default:
+            break;
+        }
     }
 
     Application::Application()
     {
         m_Instance = this;
-        m_Running = true;
 
-        signal(SIGINT, signal_callback_handler);
+        // Initializing
+        ScopedTimer timer("Initialization");
+
+        // Logging system
         Log::Init();
-
         CORE_INFO("Welcome to ProjectA.I.");
+
+        // Terminal Signal event listener
+        signal(SIGINT, signal_callback_handler);
+
+        // Lidar SDK
+        Lidar::Init();
+        if (!Lidar::Connect())
+        {
+            CORE_ERROR("Couldn't find a Lidar device, Waiting for device!");
+            while (m_Running && !Lidar::Connect())
+                sleep(1);
+        }
+
+        // Initialization done! Running application
+        m_Running = true;
     }
 
     Application::~Application()
     {
-        Close();
+        ScopedTimer timer("Releasing resources");
+        
+        if (m_Running)
+            Close();
+
+        Lidar::Destroy();
+        GPIO::Destroy();
+    }
+
+    void Application::Close()
+    {
+        CORE_INFO("Closing ProjectA.I.");
+        m_Running = false;
     }
 
     Application &Application::Get()
@@ -33,23 +70,11 @@ namespace ProjectAI
 
     void Application::Run()
     {
-        if (!m_Lidar.Connect())
-        {
-            CORE_ERROR("Couldn't find a Lidar device, Waiting for device!");
-            while (m_Running && !m_Lidar.Connect())
-                sleep(1);
-        }
-
         while (m_Running)
         {
-            Timer timer("Runtime");
-            m_Lidar.Scan();
+            ScopedTimer timer("Runtime");
+            Lidar::Scan();
         }
-    }
-
-    void Application::Close()
-    {
-        m_Running = false;
     }
 }
 
