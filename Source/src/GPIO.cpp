@@ -5,51 +5,54 @@ namespace ProjectAI
 {
     struct Pin
     {
-        int tag;
-        clock_t updateTime;
-        int interval;
-        bool continuous;
-        bool state = false;
-        Pin(GPIO::Outputs _tag) : tag((int)_tag) {}
+        unsigned int Port;
+        bool State, IsContinuous;
+        clock_t PreviousTime, Interval;
+
+        Pin(GPIO::Outputs port) : Port(port), State(false), IsContinuous(false), PreviousTime(0), Interval(0) {}
     };
 
-    static Pin s_Pins[]{GPIO::Outputs::Motor1, GPIO::Outputs::Motor2, GPIO::Outputs::SteeringPWM};
+    struct PWM
+    {
+        unsigned int Port, Range, DutyCycle;
+        PWM(GPIO::Outputs port, unsigned int range, unsigned int duty) : Port(port), Range(range), DutyCycle(duty) {}
+    };
+
+    static Pin s_Pins[] = {};
+    static PWM s_PinsPWM[] = {PWM(GPIO::Outputs::Motor1, 255, 20000), PWM(GPIO::Outputs::Motor2, 255, 20000), PWM(GPIO::Outputs::steeringPin, 1100, 50)};
 
     void GPIO::Init()
     {
         gpioInitialise();
         for (auto &pin : s_Pins)
-            gpioSetMode(pin.tag, PI_OUTPUT);
+            gpioSetMode(pin.Port, PI_OUTPUT);
+
+        for (auto &pin : s_PinsPWM)
+        {
+            gpioSetPWMrange(pin.Port, pin.Range);
+            gpioSetPWMfrequency(pin.Port, pin.DutyCycle);
+        }
     }
 
     void GPIO::Destroy()
     {
+        for (auto &pin : s_Pins)
+            gpioWrite(pin.Port, false);
+
+        for (auto &pin : s_PinsPWM)
+            gpioPWM(pin.Port, 0);
+
         gpioTerminate();
     }
 
-    void GPIO::Toggle(Outputs pinTag, bool targetState)
+    void GPIO::Toggle(Outputs port, bool targetState)
     {
         for (auto &pin : s_Pins)
         {
-            if ((Outputs)pin.tag == pinTag)
+            if (pin.Port == port)
             {
-                gpioWrite(pin.tag, targetState);
-                pin.interval = 999999;
-                return;
-            }
-        }
-    }
-
-    void GPIO::Blink(Outputs pinTag, int blinkTime, bool continuousBlinking)
-    {
-        for (auto &pin : s_Pins)
-        {
-            if ((Outputs)pin.tag == pinTag)
-            {
-                pin.state = true;
-                pin.interval = blinkTime;
-                pin.continuous = continuousBlinking;
-                pin.updateTime = 0;
+                pin.State = targetState;
+                pin.Interval = 0;
                 Update();
 
                 return;
@@ -57,13 +60,43 @@ namespace ProjectAI
         }
     }
 
-    void GPIO::SetContinuity(Outputs pinTag, bool continuousBlinking)
+    void GPIO::PWM(Outputs port, float dutyCycle)
+    {
+        for (auto &pin : s_PinsPWM)
+        {
+            if (pin.Port == port)
+            {
+                gpioPWM(port, std::min(dutyCycle, (float)pin.Range));
+
+                return;
+            }
+        }
+    }
+
+    void GPIO::Blink(Outputs port, int blinkTime, bool continuousBlinking)
     {
         for (auto &pin : s_Pins)
         {
-            if ((Outputs)pin.tag == pinTag)
+            if (pin.Port == port)
             {
-                pin.continuous = continuousBlinking;
+                pin.State = true;
+                pin.Interval = blinkTime;
+                pin.IsContinuous = continuousBlinking;
+                pin.PreviousTime = 0;
+                Update();
+
+                return;
+            }
+        }
+    }
+
+    void GPIO::SetContinuity(Outputs port, bool continuousBlinking)
+    {
+        for (auto &pin : s_Pins)
+        {
+            if (pin.Port == port)
+            {
+                pin.IsContinuous = continuousBlinking;
                 return;
             }
         }
@@ -74,25 +107,19 @@ namespace ProjectAI
         clock_t currentTime = clock();
         for (auto &pin : s_Pins)
         {
-            if ((currentTime - pin.updateTime) > pin.interval)
+            if (pin.Interval)
             {
-                pin.updateTime = currentTime;
-                if (pin.continuous)
+                if (currentTime - pin.PreviousTime > pin.Interval)
                 {
-                    pin.state = !pin.state;
-                    gpioWrite(pin.tag, pin.state);
-                }
-                else
-                {
-                    if (pin.state)
-                    {
-                        gpioWrite(pin.tag, 1);
-                        pin.state = false;
-                    }
-                    else
-                        gpioWrite(pin.tag, 0);
+                    pin.PreviousTime = currentTime;
+                    gpioWrite(pin.Port, pin.State);
+
+                    if (pin.IsContinuous)
+                        pin.State = !pin.State;
                 }
             }
+            else
+                gpioWrite(pin.Port, pin.State);
         }
     }
 }

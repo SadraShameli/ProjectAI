@@ -7,14 +7,13 @@ namespace ProjectAI
     public:
         static void Init();
 
-        static void MoveForward();
-        static void MoveBackward();
+        static void MoveForward(float);
+        static void MoveBackward(float);
         static void MoveLeft();
         static void MoveRight();
-
-        static void Turn(float);
         static void Stop();
 
-    private:
+        static void TurnDegree(float);
+        static void TurnRadian(float);
     };
 }

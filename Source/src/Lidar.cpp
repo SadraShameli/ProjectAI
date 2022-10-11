@@ -1,107 +1,62 @@
 #include "Lidar.h"
 #include "Log.h"
-
-#include <glm/glm.hpp>
+#include "Driver.h"
 
 namespace ProjectAI
 {
     void Lidar::Init()
     {
-        ydlidar::os_init();
-
         // Baudrate
         int i_optval = 128000;
         m_Lidar.setlidaropt(LidarPropSerialBaudrate, &i_optval, sizeof(int));
 
-        // Tof lidar
+        // Triangle Lidar
         i_optval = TYPE_TRIANGLE;
         m_Lidar.setlidaropt(LidarPropLidarType, &i_optval, sizeof(int));
 
-        // Device type
+        // Device Type
         i_optval = YDLIDAR_TYPE_SERIAL;
         m_Lidar.setlidaropt(LidarPropDeviceType, &i_optval, sizeof(int));
 
-        // Sample rate
-        i_optval = 3;
+        // Sample Rate
+        i_optval = 5;
         m_Lidar.setlidaropt(LidarPropSampleRate, &i_optval, sizeof(int));
 
-        // Abnormal count
-        i_optval = 4;
-        m_Lidar.setlidaropt(LidarPropAbnormalCheckCount, &i_optval, sizeof(int));
-
-        // Intenstiy bit count
-        i_optval = 8;
-        m_Lidar.setlidaropt(LidarPropIntenstiyBit, &i_optval, sizeof(int));
-
-        // Fixed-angle resolution
-        bool b_optvalue = false;
-        m_Lidar.setlidaropt(LidarPropFixedResolution, &b_optvalue, sizeof(bool));
-
-        // Rotate 180
-        b_optvalue = false;
-        m_Lidar.setlidaropt(LidarPropReversion, &b_optvalue, sizeof(bool));
-
-        // Counterclockwise
-        b_optvalue = false;
-        m_Lidar.setlidaropt(LidarPropInverted, &b_optvalue, sizeof(bool));
-
-        // Auto-reconnect
-        b_optvalue = true;
+        // Auto Reconnect
+        bool b_optvalue = true;
         m_Lidar.setlidaropt(LidarPropAutoReconnect, &b_optvalue, sizeof(bool));
 
-        // One-way communication
+        // One-way Communication
         b_optvalue = true;
         m_Lidar.setlidaropt(LidarPropSingleChannel, &b_optvalue, sizeof(bool));
 
-        // Intensity
-        b_optvalue = false;
-        m_Lidar.setlidaropt(LidarPropIntenstiy, &b_optvalue, sizeof(bool));
-
-        // Motor DTR
-        b_optvalue = true;
-        m_Lidar.setlidaropt(LidarPropSupportMotorDtrCtrl, &b_optvalue, sizeof(bool));
-
-        // HeartBeat
-        b_optvalue = false;
-        m_Lidar.setlidaropt(LidarPropSupportHeartBeat, &b_optvalue, sizeof(bool));
-
-        // Unit: Degrees
-        float f_optvalue = 180.0f;
-        m_Lidar.setlidaropt(LidarPropMaxAngle, &f_optvalue, sizeof(float));
-        f_optvalue = -180.0f;
-        m_Lidar.setlidaropt(LidarPropMinAngle, &f_optvalue, sizeof(float));
-
         // Unit: Meters
-        f_optvalue = 64.f;
+        float f_optvalue = 10.0f;
         m_Lidar.setlidaropt(LidarPropMaxRange, &f_optvalue, sizeof(float));
-        f_optvalue = 0.05f;
+        f_optvalue = 0.12f;
         m_Lidar.setlidaropt(LidarPropMinRange, &f_optvalue, sizeof(float));
 
         // Unit: Hz
         f_optvalue = 12.0f;
         m_Lidar.setlidaropt(LidarPropScanFrequency, &f_optvalue, sizeof(float));
-
-        m_Lidar.enableGlassNoise(false);
-        m_Lidar.enableSunNoise(false);
     }
 
     void Lidar::Destroy()
     {
         m_Lidar.turnOff();
         m_Lidar.disconnecting();
-        ydlidar::os_shutdown();
     }
 
     bool Lidar::Connect()
     {
-        // Search for Lidar devices
+        // Search for YDLidar devices
         auto lidarPortList = ydlidar::lidarPortList();
         for (auto &port : lidarPortList)
         {
             CORE_INFO("YDLidar device has been found - [Port: {0}, Version: {1}]", port.second, port.first);
             m_Lidar.setlidaropt(LidarPropSerialPort, port.second.c_str(), port.second.size());
 
-            // Try to initialize SDK and LiDAR
+            // Try to Initialize YDLidar SDK
             if (m_Lidar.initialize() && m_Lidar.turnOn())
                 return true;
             else
@@ -113,31 +68,22 @@ namespace ProjectAI
 
     bool Lidar::Scan()
     {
-        if (ydlidar::os_isOk())
+        if (m_Lidar.doProcessSimple(m_Laser))
         {
-            LaserScan scan;
-            if (m_Lidar.doProcessSimple(scan))
-            {
-                CORE_INFO("Scan received: {0} ranges at {1}Hz", scan.points.size(), 1.0f / scan.config.scan_time);
+            CORE_INFO("Scan received: {0} ranges at {1} Hz", m_Laser.points.size(), 1.0f / m_Laser.config.scan_time);
 
-                auto max = std::begin(scan.points);
-                for (auto it = scan.points.begin(); it != scan.points.end(); ++it)
-                {
-                    // CORE_INFO("{0} : {1}", point.angle * (180 / M_PI), point.range);
-                    if (it->range > max->range)
-                        max = it;
-                }
+            auto maxRange = std::max_element(m_Laser.points.begin(), m_Laser.points.end(), [](const LaserPoint &a, const LaserPoint &b)
+                                             { return a.range < b.range; });
 
-                CORE_INFO("{0} : {1}", glm::degrees(max->angle), max->range);
+            CORE_INFO("{0} : {1}", glm::degrees(maxRange->angle) + 90, maxRange->range);
 
-                // std::map<float, int> map;
-                // map[]
+            Driver::MoveForward(100);
+            Driver::TurnDegree(glm::degrees(maxRange->angle));
 
-                return true;
-            }
-            else
-                CORE_ERROR("Failed to get Lidar Data");
+            return true;
         }
+        else
+            CORE_ERROR("Failed to get Lidar Data");
 
         return false;
     }

@@ -2,20 +2,16 @@
 #include "Timer.h"
 #include "Log.h"
 #include "GPIO.h"
+#include "Driver.h"
 
 namespace ProjectAI
 {
     static void signal_callback_handler(int signum)
     {
-        switch (signum)
+        if (signum == SIGINT)
         {
-        case SIGINT:
             CORE_WARN("Terminating");
             Application::Get().Close();
-            break;
-
-        default:
-            break;
         }
     }
 
@@ -28,10 +24,7 @@ namespace ProjectAI
 
         // Logging system
         Log::Init();
-        CORE_INFO("Welcome to ProjectA.I.");
-
-        // Terminal Signal event listener
-        signal(SIGINT, signal_callback_handler);
+        CORE_INFO("Welcome to ProjectAI");
 
         // Initializing GPIO
         GPIO::Init();
@@ -41,9 +34,12 @@ namespace ProjectAI
         if (!Lidar::Connect())
         {
             CORE_ERROR("Couldn't find a Lidar device, Waiting for device!");
-            while (m_Running && !Lidar::Connect())
+            while (!Lidar::Connect())
                 sleep(1);
         }
+
+        // Terminal Signal event listener
+        signal(SIGINT, signal_callback_handler);
 
         // Initialization done! Running application
         m_Running = true;
@@ -73,15 +69,11 @@ namespace ProjectAI
 
     void Application::Run()
     {
-        GPIO::Toggle(GPIO::Motor1, true);
-        GPIO::Toggle(GPIO::Motor2, false);
-
         while (m_Running)
         {
             ScopedTimer timer("Runtime");
 
             // Runtime
-            GPIO::Update();
             Lidar::Scan();
         }
     }

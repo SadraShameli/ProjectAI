@@ -15,5 +15,6 @@ namespace ProjectAI
 
     private:
         static inline CYdLidar m_Lidar;
+        static inline LaserScan m_Laser;
     };
 }
