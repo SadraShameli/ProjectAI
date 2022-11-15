@@ -203,9 +203,10 @@ class ProjectAI:
         # threading.Thread(target=self.ConnectToDevices, daemon=True).start()    
         while not self.ConnectLidar():
             time.sleep(0.25)        
-            
-        while not self.ConnectController():
-            time.sleep(0.25)        
+        
+        self.ConnectController()
+        if not self.controller.is_connected:        
+            self.log('No console controller could be found')
         
         self.log(f'''Please control the robot via the URL {self.webserver.server_address[0]}:{self.webserver.server_address[1]} or a PS4 or PS5 controller''')
         
@@ -256,12 +257,12 @@ class ProjectAI:
             if os.path.exists(address):                
                 self.controller = ConsoleController(interface=address, connecting_using_ds4drv=False, callback=self)        
                 threading.Thread(target=self.controller.listen, daemon=True).start()
-                time.sleep(0.25)
+                
+                # Delay needed to wait for the thread to connect
+                time.sleep(1)
                 if self.controller.is_connected: 
                     self.log(f'Connected to controller at {address}')
                     return True
-        
-        self.log('No console controller could be found')
         return False
             
             
