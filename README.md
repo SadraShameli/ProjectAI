@@ -82,6 +82,12 @@ Currently as of Nov 15, 2022, we are planning to add the following functionaliti
 
 ## Photos
 
+Initial robot development:
+![ProjectAI](Documentation/Pictures/IMG_2087.jpg "ProjectAI")
+
+Building the robot fully done:
+![ProjectAI](Documentation/Pictures/IMG_3824.jpg "ProjectAI")
+
 
 Disclaimer: Please note that this project is currently under development. Various tests are done to make it bug free, but there is always room for error.
 Created with ♥ and maintained by Sadra Shameli. All Rights Reserved.
