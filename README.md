@@ -1,7 +1,7 @@
 # Project A.I.
 
 The purpose of this project is to create an autonomous self-driving robot, which is able to follow a course and avoid obstacles, all on its own. 
-Its inspiration originates from being a big fan of Elon Musk, Tesla and its technology. 
+Its inspiration originates from being a big fan of Elon Musk, Tesla and its technology.
 This project is mainly created for PWS (profielwerkstuk) using our own specific hardware, but it can be replicated by the user to work on their hardware as well.
 
 You can visit my social profiles using the following links: 
@@ -30,6 +30,11 @@ You can visit my social profiles using the following links:
 ## Dependencies
 The python code uses different modules to add additional functionalities. These are listed below and can be installed using their respective commands.
 
+[CMake](https://pypi.org/project/cmake) to built the source code
+```
+pip install cmake
+```
+
 [YDLidar SDK](https://github.com/YDLIDAR/YDLidar-SDK) to drive the YDLidar sensor:
 ```
 git clone https://github.com/YDLIDAR/YDLidar-SDK.git
@@ -37,17 +42,19 @@ cd YDLidar-SDK
 pip install .
 ```
 
-[RPi GPIO](https://pypi.org/project/RPi.GPIO) to manage and setup the pins on the Raspberry PI:
+[pigpio](https://pypi.org/project/pigpio) to manage and setup the pins on the Raspberry PI:
 ```
-pip install RPi.GPIO
+pip install pigpio
+sudo systemctl enable pigpiod
+sudo systemctl start pigpiod 
 ```
 
-[netifaces](https://pypi.org/project/netifaces/) to provide network access
+[netifaces](https://pypi.org/project/netifaces) to provide network access:
 ```
 pip install netifaces
 ```
 
-[pyPS4Controller](https://pypi.org/project/pyPS4Controller) to connect and control a PS4 - PS5 controller
+[pyPS4Controller](https://pypi.org/project/pyPS4Controller) to connect and control a PS4 - PS5 controller:
 ```
 pip install pyPS4Controller
 ```
@@ -55,7 +62,7 @@ pip install pyPS4Controller
 ## Change Log
 
 - Sep 11, 2022
-    - Created the C++ project, configured CMake and added [YDLidar SDK library](https://github.com/YDLIDAR/YDLidar-SDK)
+    - Created the C++ project, configured CMake and added [YDLidar SDK](https://github.com/YDLIDAR/YDLidar-SDK) library
 - Sep 15, 2022
     - Initial test of the YDLidar sensor successful
 - Sep 17, 2022
@@ -78,16 +85,15 @@ Currently as of Nov 15, 2022, we are planning to add the following functionaliti
 
 - Add environmental data gathering and displaying on the website. For example, sound level measurements, temperature, humanity and more
 - Add Webserver support to the C++ source code
-- Add console controller support to the C++ source code- 
+- Add console controller support to the C++ source code
+- Add documentation on how to connect to Raspberry Pi wirelessly with SSH connection
 
 ## Photos
 
-Initial robot development:
-![ProjectAI](Documentation/Pictures/IMG_2087.jpg "ProjectAI")
-
-Building the robot fully done:
 ![ProjectAI](Documentation/Pictures/IMG_3824.jpg "ProjectAI")
 
 
+-----
 Disclaimer: Please note that this project is currently under development. Various tests are done to make it bug free, but there is always room for error.
+
 Created with ♥ and maintained by Sadra Shameli. All Rights Reserved.
