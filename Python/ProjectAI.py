@@ -10,6 +10,7 @@ from threading import Thread
 # External Libraries
 import ydlidar
 import netifaces as ni
+import tflite_runtime.interpreter as tf
 from gpiozero import Motor
 from gpiozero import AngularServo as Servo
 from gpiozero.pins.pigpio import PiGPIOFactory
@@ -29,10 +30,16 @@ HEADING_RIGHT = math.pi * 1.0
 
 # A.I.
 AI_FOLDER = f'{CURRENT_FOLDER}/AI'
-DEFAULT_APERTURE = math.radians(5)
+AI_MODEL_NAME = f'{AI_FOLDER}/model.tflite'
+DEFAULT_APERTURE = math.radians(8)
 
 
 # Helper Functions
+def ProgramRestart():
+    Thread(target=os.execv, args=[sys.executable, ['python'] + sys.argv]).start()
+    os._exit()
+
+
 def Clamp(n, smallest, largest):
     return max(smallest, min(n, largest))
 
@@ -67,13 +74,24 @@ class HTTPHelper(BaseHTTPRequestHandler):
                 self.path = '/index.html'
 
             if '.' in self.path:
-                with open(f'{PROJECT_FOLDER}/WebServer{self.path}', 'rb') as f:
+                with open(f'{PROJECT_FOLDER}{self.path}', 'rb') as f:
 
                     self.send_response(200)
                     self.end_headers()
                     self.wfile.write(f.read())
 
                     self.log(f'File served: {self.path}')
+
+            if 'restart' in self.path:
+                self.send_response(200)
+                self.end_headers()
+                ProgramRestart()
+
+            if 'reboot' in self.path:
+                self.send_response(200)
+                self.end_headers()
+                os.system('sudo reboot')
+
             else:
                 self.send_response(404)
                 self.end_headers()
@@ -153,16 +171,12 @@ class ConsoleController(Controller):
     def on_L2_release(self):
         self.callback.Stop()
 
-    def on_L3_up(self, value): return
-    def on_L3_down(self, value): return
-    def on_L3_left(self, value): return
-    def on_L3_right(self, value): return
     def on_R3_up(self, value): return
     def on_R3_down(self, value): return
-    def on_x_press(self): return
-    def on_x_release(self): return
-    def on_circle_press(self): return
-    def on_circle_release(self): return
+    def on_R3_left(self, value): return
+    def on_R3_right(self, value): return
+    def on_L3_up(self, value): return
+    def on_L3_down(self, value): return
     def on_triangle_press(self): return
     def on_triangle_release(self): return
     def on_square_press(self): return
@@ -176,17 +190,11 @@ class ConsoleController(Controller):
     def on_L1_press(self): return
     def on_L1_release(self): return
 
-    def on_R3_right(self, value):
+    def on_L3_right(self, value):
         self.callback.TurnDegree(self.map_heading(value))
 
-    def on_R3_left(self, value):
+    def on_L3_left(self, value):
         self.callback.TurnDegree(self.map_heading(value))
-
-    def on_R3_x_at_rest(self):
-        self.callback.Stop()
-
-    def on_R3_y_at_rest(self):
-        self.callback.TurnAhead()
 
     def on_L3_x_at_rest(self):
         self.callback.Stop()
@@ -194,20 +202,39 @@ class ConsoleController(Controller):
     def on_L3_y_at_rest(self):
         self.callback.TurnAhead()
 
+    def on_R3_x_at_rest(self):
+        self.callback.Stop()
+
+    def on_R3_y_at_rest(self):
+        self.callback.TurnAhead()
+
+    def on_x_press(self):
+        self.callback.recordNodes = True
+
+    def on_x_release(self):
+        self.callback.recordNodes = False
+        self.callback.SaveNodes()
+
+    def on_circle_press(self):
+        self.callback.followAI = True
+
+    def on_circle_release(self):
+        self.callback.followAI = False
+
 
 # ProjectAI
 class ProjectAI:
 
     # Initializer
     def __init__(self):
-        print('''                            
+        print('''
 ----------------------------------------------------
 Welcome to
- ____            _           _        _      ___    
-|  _ \ _ __ ___ (_) ___  ___| |_     / \    |_ _|   
-| |_) | '__/ _ \| |/ _ \/ __| __|   / _ \    | |    
-|  __/| | | (_) | |  __/ (__| |_   / ___ \ _ | | _  
-|_|   |_|  \___// |\___|\___|\__| /_/   \_(_)___(_) 
+ ____            _           _        _      ___
+|  _ \ _ __ ___ (_) ___  ___| |_     / \    |_ _|
+| |_) | '__/ _ \| |/ _ \/ __| __|   / _ \    | |
+|  __/| | | (_) | |  __/ (__| |_   / ___ \ _ | | _
+|_|   |_|  \___// |\___|\___|\__| /_/   \_(_)___(_)
 
 Made with \u2665 By Sadra Shameli
 ----------------------------------------------------
@@ -215,6 +242,10 @@ Made with \u2665 By Sadra Shameli
         try:
             self.movingSpeed = 0.0
             self.movingHeading = 0.0
+            self.InputNodes = []
+            self.DistanceNodes = []
+            self.recordNodes = False
+            self.followAI = False
 
             # Setup GPIO
             self.log('Initializing GPIO Pins')
@@ -241,19 +272,20 @@ Made with \u2665 By Sadra Shameli
             self.lidar.setlidaropt(ydlidar.LidarPropMinAngle, -180.0)
             self.scan = ydlidar.LaserScan()
 
-            # Connect YDLidar
-            while not self.ConnectLidar():
-                time.sleep(0.25)
-
             # Setup Webserver
             self.log('Initializing Webserver')
             handler_partial = functools.partial(HTTPHelper, callback=self)
             self.webserver = HTTPServer((GetIpAddress(), 8080), handler_partial)
             Thread(target=self.webserver.serve_forever, daemon=True).start()
             self.log(f'WebServer started at {self.webserver.server_address[0]}:{self.webserver.server_address[1]}')
+            Thread(target=os.system, args=[f'python3 -m http.server -b {GetIpAddress()}'], daemon=True).start()
 
             # Setup Console Controller
             self.ConnectController()
+
+            # Connect YDLidar
+            if not self.ConnectLidar():
+                ProgramRestart()
 
             self.log(f'''Please control the robot via the URL {self.webserver.server_address[0]}:{self.webserver.server_address[1]} or a PS4 or PS5 controller''')
             self.log('Initialization done!')
@@ -361,41 +393,65 @@ Made with \u2665 By Sadra Shameli
         results = [scan.range for scan in self.scan.points if math.isclose(angle, scan.angle, rel_tol=aperture)]
         return Average(results)
 
-    # Save Distance Nodes for the A.I. to file
-    def SaveDistanceNodes(self, nodes):
-        with open(f'{AI_FOLDER}/DistanceNodes.txt', 'a+') as f:
-            arr = numpy.array(nodes)
-            numpy.savetxt(f, arr, delimiter=',', newline=',', fmt='%f')
-            f.write('\n')
+    # Save Nodes for the A.I. to file
+    def SaveNodes(self):
+        numpy.save(f'{AI_FOLDER}/DistanceNodes.npy', numpy.asarray(self.DistanceNodes))
+        numpy.save(f'{AI_FOLDER}/InputNodes.npy', numpy.asarray(self.InputNodes))
+        self.DistanceNodes.clear()
+        self.InputNodes.clear()
 
-    # Save Input Nodes for the A.I. to file
-    def SaveInputNodes(self, nodes):
-        with open(f'{AI_FOLDER}/InputNodes.txt', 'a+') as f:
-            arr = numpy.array(nodes)
-            numpy.savetxt(f, arr, delimiter=',', newline=',', fmt='%f')
-            f.write('\n')
+    # Setup TensorFlow
+
+    def ReadTensors(self):
+        self.tfInterpreter = tf.Interpreter(AI_MODEL_NAME)
+        self.tfInterpreter.allocate_tensors()
+
+        # Get input and output tensors.
+        self.input_details = self.tfInterpreter.get_input_details()
+        self.output_details = self.tfInterpreter.get_output_details()
+        self.input_shape = self.input_details[0]['shape']
 
     # Runtime
     def Runtime(self):
+        self.ReadTensors()
         while True:
             try:
                 if self.lidar.doProcessSimple(self.scan):
-                    
-                    listScans = [
-                        self.FilterScansAngle(HEADING_LEFT),
-                        self.FilterScansAngle(HEADING_TOPLEFT),
-                        self.FilterScansAngle(HEADING_AHEAD),
-                        self.FilterScansAngle(HEADING_TOPRIGHT),
-                        self.FilterScansAngle(HEADING_RIGHT)
-                    ]
+                    if self.recordNodes:
+                        self.DistanceNodes.append([
+                            self.FilterScansAngle(HEADING_LEFT),
+                            self.FilterScansAngle(HEADING_TOPLEFT),
+                            self.FilterScansAngle(HEADING_AHEAD),
+                            self.FilterScansAngle(HEADING_TOPRIGHT),
+                            self.FilterScansAngle(HEADING_RIGHT)
+                        ])
 
-                    listInputs = [
-                        self.movingSpeed,
-                        self.movingHeading
-                    ]
+                        self.InputNodes.append([
+                            self.movingSpeed,
+                            self.movingHeading / math.pi
+                        ])
 
-                    self.SaveDistanceNodes(listScans)
-                    self.SaveInputNodes(listInputs)
+                    if self.followAI:
+                        distanceNodes = numpy.array([
+                            [
+                                # self.FilterScansAngle(HEADING_LEFT),
+                                self.FilterScansAngle(HEADING_TOPLEFT),
+                                self.FilterScansAngle(HEADING_AHEAD),
+                                self.FilterScansAngle(HEADING_TOPRIGHT),
+                                self.FilterScansAngle(HEADING_RIGHT)
+                            ]
+                        ], dtype=numpy.float32)
+
+                        self.tfInterpreter.set_tensor(self.input_details[0]['index'], distanceNodes)
+                        self.tfInterpreter.invoke()
+                        tensor = self.tfInterpreter.get_tensor(self.output_details[0]['index'])
+
+                        self.TurnRadian(tensor[0][1])
+                        self.MoveForward(tensor[0][0])
+
+                        print(tensor)
+
+                    time.sleep(0.05)
 
                 else:
                     self.log('Failed to get Lidar Data')
@@ -405,7 +461,7 @@ Made with \u2665 By Sadra Shameli
             except Exception as e:
                 self.log(f'Exception thrown: {e}')
 
-    @staticmethod
+    @ staticmethod
     def log(*args):
         print(f'[ProjectAI] {args[0]}')
 
