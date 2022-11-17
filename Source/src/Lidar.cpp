@@ -26,15 +26,30 @@ namespace ProjectAI
         bool b_optvalue = true;
         m_Lidar.setlidaropt(LidarPropAutoReconnect, &b_optvalue, sizeof(bool));
 
-        // One-way Communication
         b_optvalue = true;
+        m_Lidar.setlidaropt(LidarPropSupportMotorDtrCtrl, &b_optvalue, sizeof(bool));
+
+        // One-way Communication
+        b_optvalue = false;
         m_Lidar.setlidaropt(LidarPropSingleChannel, &b_optvalue, sizeof(bool));
+
+        b_optvalue = false;
+        m_Lidar.setlidaropt(LidarPropIntenstiy, &b_optvalue, sizeof(bool));
+
+        b_optvalue = true;
+        m_Lidar.setlidaropt(LidarPropReversion, &b_optvalue, sizeof(bool));
 
         // Unit: Meters
         float f_optvalue = 10.0f;
         m_Lidar.setlidaropt(LidarPropMaxRange, &f_optvalue, sizeof(float));
         f_optvalue = 0.12f;
         m_Lidar.setlidaropt(LidarPropMinRange, &f_optvalue, sizeof(float));
+
+        // Unit: Degrees
+        f_optvalue = 180.0f;
+        m_Lidar.setlidaropt(LidarPropMaxAngle, &f_optvalue, sizeof(float));
+        f_optvalue = -180.0f;
+        m_Lidar.setlidaropt(LidarPropMinAngle, &f_optvalue, sizeof(float));
 
         // Unit: Hz
         f_optvalue = 12.0f;
@@ -59,8 +74,6 @@ namespace ProjectAI
             // Try to Initialize YDLidar SDK
             if (m_Lidar.initialize() && m_Lidar.turnOn())
                 return true;
-            else
-                CORE_ERROR(m_Lidar.DescribeError());
         }
 
         return false;
@@ -75,10 +88,10 @@ namespace ProjectAI
             auto maxRange = std::max_element(m_Laser.points.begin(), m_Laser.points.end(), [](const LaserPoint &a, const LaserPoint &b)
                                              { return a.range < b.range; });
 
-            CORE_INFO("{0} : {1}", glm::degrees(maxRange->angle) + 90, maxRange->range);
+            CORE_INFO("{0} : {1}", glm::degrees(maxRange->angle), maxRange->range);
 
             Driver::MoveForward(100);
-            Driver::TurnDegree(glm::degrees(maxRange->angle));
+            Driver::TurnRadian(maxRange->angle);
 
             return true;
         }

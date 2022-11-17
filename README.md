@@ -27,12 +27,54 @@ You can visit my social profiles using the following links:
     - Continuously run the webserver, without interfering with the core functionality
     - Scan the environment with the YDLidar sensor, create a 2D model
 
+## Installation
+
+To install the latest release, start by cloning this repository. Please don't forget to clone recursively as this repository uses modules which otherwise won't be downloaded.
+
+```
+git clone https://github.com/SadraShameli/ProjectAI --recursive
+```
+
+For your convinience, there is a shell script available which will automatically install the required dependencies.
+
+```
+cd ProjectAI/
+sudo bash Setup.sh
+```
+
+To connect to your Raspberry Pi on a computer wirelessly through SSH connection, please follow the next steps on your main computer.
+
+Navigate to the following folder:
+
+```
+cd Libraries/RaspberryPiSSH/scripts/
+```
+
+Run the following script based on your operating system and follow the instructions on your screen:
+
+Windows:
+```
+windows-ssh-setup.cmd
+```
+
+Linux, MacOS:
+```
+sudo bash ssh-setup.sh
+```
+
 ## Dependencies
+
+Note: this step is not required if you run the automated shell script from the Installation section to install the dependencies.
 The python code uses different modules to add additional functionalities. These are listed below and can be installed using their respective commands.
 
-[CMake](https://pypi.org/project/cmake) to built the source code
+[CMake](https://pypi.org/project/cmake) to build the source code:
 ```
 pip install cmake
+```
+
+[swig](https://pypi.org/project/swig/) to build the YDLidar library:
+```
+pip install swig
 ```
 
 [YDLidar SDK](https://github.com/YDLIDAR/YDLidar-SDK) to drive the YDLidar sensor:
@@ -57,6 +99,11 @@ pip install netifaces
 [pyPS4Controller](https://pypi.org/project/pyPS4Controller) to connect and control a PS4 - PS5 controller:
 ```
 pip install pyPS4Controller
+```
+
+[TensorFlow Lite](https://www.tensorflow.org/lite/guide/python) to run the A.I. network and procces models:
+```
+pip install tflite-runtime
 ```
 
 ## Change Log

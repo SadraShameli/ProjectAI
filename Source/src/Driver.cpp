@@ -21,12 +21,12 @@ namespace ProjectAI
 
     void Driver::MoveLeft()
     {
-        TurnDegree(-90);
+        TurnDegree(Left);
     }
 
     void Driver::MoveRight()
     {
-        TurnDegree(90);
+        TurnDegree(Right);
     }
 
     void Driver::Stop()
@@ -37,8 +37,7 @@ namespace ProjectAI
 
     void Driver::TurnDegree(float angle)
     {
-        float dutyCycle = (angle + 90) / 3 + 90;
-        GPIO::PWM(GPIO::steeringPin, std::clamp(dutyCycle, 60.0f, 120.0f));
+        GPIO::PWM(GPIO::steeringPin, std::clamp(angle < 0 ? angle + 360 : angle, 0.0f, 360.0f));
     }
 
     void Driver::TurnRadian(float angle)

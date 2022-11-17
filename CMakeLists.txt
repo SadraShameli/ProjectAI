@@ -14,22 +14,24 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++20")
 add_subdirectory(Source)
 
 # YDLidar 
+link_directories(Libraries/YDLidar)
 add_subdirectory(Libraries/YDLidar)
-target_link_libraries(ProjectAI ydlidar_sdk)
+target_include_directories(${PROJECT_NAME} PRIVATE Libraries/YDLidar/src)
+target_link_libraries(${PROJECT_NAME} ydlidar_sdk)
 
 # spdlog 
 add_subdirectory(Libraries/spdlog)
-target_include_directories(ProjectAI PRIVATE Libraries/spdlog/include)
+target_include_directories(${PROJECT_NAME} PRIVATE Libraries/spdlog/include)
 
 # pigpio
-target_link_libraries(ProjectAI pigpio)
+target_link_libraries(${PROJECT_NAME} pigpio)
 
 # glm 
 add_subdirectory(Libraries/glm)
-target_include_directories(ProjectAI PRIVATE Libraries/glm)
+target_include_directories(${PROJECT_NAME} PRIVATE Libraries/glm)
 
 # poco
 #add_subdirectory(Libraries/poco)
-#target_link_libraries(ProjectAI Poco)
-#target_include_directories(ProjectAI PRIVATE Libraries/poco/Net/include)
-#target_include_directories(ProjectAI PRIVATE Libraries/poco/Util/include)
+#target_link_libraries(${PROJECT_NAME} Poco)
+#target_include_directories(${PROJECT_NAME} PRIVATE Libraries/poco/Net/include)
+#target_include_directories(${PROJECT_NAME} PRIVATE Libraries/poco/Util/include)

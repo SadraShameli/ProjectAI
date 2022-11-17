@@ -10,7 +10,7 @@ namespace ProjectAI
     {
         if (signum == SIGINT)
         {
-            CORE_WARN("Terminating");
+            CORE_WARN("\nTerminating");
             Application::Get().Close();
         }
     }
@@ -24,7 +24,7 @@ namespace ProjectAI
 
         // Logging system
         Log::Init();
-        CORE_INFO("Welcome to ProjectAI");
+        CORE_INFO("Welcome to Project A.I.");
 
         // Initializing GPIO
         GPIO::Init();
@@ -35,7 +35,7 @@ namespace ProjectAI
         {
             CORE_ERROR("Couldn't find a Lidar device, Waiting for device!");
             while (!Lidar::Connect())
-                sleep(1);
+                std::this_thread::sleep_for(std::chrono::seconds(1));
         }
 
         // Terminal Signal event listener
@@ -58,7 +58,7 @@ namespace ProjectAI
 
     void Application::Close()
     {
-        CORE_INFO("Closing ProjectA.I.");
+        CORE_INFO("Closing Project A.I.");
         m_Running = false;
     }
 

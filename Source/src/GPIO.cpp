@@ -19,7 +19,7 @@ namespace ProjectAI
     };
 
     static Pin s_Pins[] = {};
-    static PWM s_PinsPWM[] = {PWM(GPIO::Outputs::Motor1, 255, 20000), PWM(GPIO::Outputs::Motor2, 255, 20000), PWM(GPIO::Outputs::steeringPin, 1100, 50)};
+    static PWM s_PinsPWM[] = {PWM(GPIO::Outputs::Motor1, 255, 20000), PWM(GPIO::Outputs::Motor2, 255, 20000), PWM(GPIO::Outputs::steeringPin, 360, 50)};
 
     void GPIO::Init()
     {
