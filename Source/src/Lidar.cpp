@@ -83,6 +83,7 @@ namespace ProjectAI
     {
         if (m_Lidar.doProcessSimple(m_Laser))
         {
+            /*
             CORE_INFO("Scan received: {0} ranges at {1} Hz", m_Laser.points.size(), 1.0f / m_Laser.config.scan_time);
 
             auto maxRange = std::max_element(m_Laser.points.begin(), m_Laser.points.end(), [](const LaserPoint &a, const LaserPoint &b)
@@ -92,6 +93,10 @@ namespace ProjectAI
 
             Driver::MoveForward(100);
             Driver::TurnRadian(maxRange->angle);
+            */
+
+           for (auto & point : m_Laser.points)
+            CORE_INFO("{0}", glm::degrees(point.angle));
 
             return true;
         }
