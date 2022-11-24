@@ -44,5 +44,3 @@ CTestTestfile.cmake
 _deps
 
 build
-Python/AI/DistanceNodes.npy
-Python/AI/InputNodes.npy

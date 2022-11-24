@@ -5,7 +5,9 @@ import math
 import json
 import numpy
 import signal
+import psutil
 import functools
+from multiprocessing import Process
 from threading import Thread
 
 # External Libraries
@@ -27,6 +29,7 @@ HEADING_TOPLEFT = math.pi * -0.75
 HEADING_AHEAD = math.pi * -0.5
 HEADING_TOPRIGHT = math.pi * -0.25
 HEADING_RIGHT = math.pi * 0.0
+SPEED_MULTIPLIER = 0.05
 
 # A.I.
 AI_FOLDER = f'{CURRENT_FOLDER}/AI'
@@ -35,20 +38,19 @@ DEFAULT_APERTURE = math.radians(1)
 
 
 # Helper Functions
-# Low Level helpers
+# Low Level
 def SignalHandler(sig, frame):
-    print('\nTerminating Application')
     ProjectAI._Running=False
     
 def ProgramRestart():
-    Thread(target=os.execv, args=[sys.executable, ['python'] + sys.argv]).start()
+    Process(target=os.execv, args=[sys.executable, ['python'] + sys.argv]).start()
     os._exit(0)
-    
+
 def GetIpAddress():    
     return ni.ifaddresses('wlan0')[ni.AF_INET][0]['addr']
-    
-    
-# Math Helpers  
+
+
+# Math  
 def Clamp(n, smallest, largest):
     return max(smallest, min(n, largest))
 
@@ -151,8 +153,9 @@ class ConsoleController(Controller):
 
     # Initializer
     def __init__(self, callback, **kwargs):
-        self.callback = callback
         Controller.__init__(self, **kwargs)
+        self.black_listed_buttons = [0, 2, 4, 5, 6, 8, 9, 10, 11, 12]
+        self.callback = callback
 
 
     def map_speed(self, value):
@@ -161,11 +164,13 @@ class ConsoleController(Controller):
     def map_heading(self, value):
         return MapRange(value, -32767, 32767, -180, 180)
 
-    def on_up_arrow_press(self):
-        self.callback.MoveForward(self.callback.MovingSpeed)
+    def on_up_arrow_press(self):        
+        if self.callback.MovingSpeed < 1.0:
+            self.callback.MovingSpeed += SPEED_MULTIPLIER 
 
     def on_down_arrow_press(self):
-        self.callback.MoveBackward(self.callback.MovingSpeed)
+        if self.callback.MovingSpeed > 0.0:
+            self.callback.MovingSpeed -= SPEED_MULTIPLIER
 
     def on_up_down_arrow_release(self):
         self.callback.Stop()
@@ -218,6 +223,9 @@ class ConsoleController(Controller):
         
     def on_square_release(self): 
         self.callback.FollowMaxDistance = False
+        
+    def on_triangle_press(self): 
+        self.callback.Stop()
 
 
     # These are neither required nor handled
@@ -230,14 +238,21 @@ class ConsoleController(Controller):
     def on_R3_left(self, value): return
     def on_R3_right(self, value): return
     def on_L3_up(self, value): return
-    def on_L3_down(self, value): return
-    def on_triangle_press(self): return
+    def on_L3_down(self, value): return    
+    def on_R3_press(self): return
+    def on_R3_release(self): return
+    def on_L3_press(self): return
+    def on_L3_release(self): return
     def on_triangle_release(self): return    
     def on_right_arrow_press(self): return
     def on_left_arrow_press(self): return
     def on_left_right_arrow_release(self): return
     def on_playstation_button_press(self): return
     def on_playstation_button_release(self): return
+    def on_options_press(self): return
+    def on_options_release(self): return
+    def on_share_press(self): return
+    def on_share_release(self): return
     
     
 
@@ -273,6 +288,9 @@ Made with \u2665 By Sadra Shameli
             self.gpioFactory = PiGPIOFactory()
             self.Motor = Motor(24, 23, pin_factory=self.gpioFactory)
             self.Steering = Servo(18, pin_factory=self.gpioFactory)
+        
+            # Setup Signal Handler to catch events
+            signal.signal(signal.SIGINT, SignalHandler) 
 
             # Setup YDLidar
             self.log('Initializing YDLidar SDK')
@@ -297,47 +315,38 @@ Made with \u2665 By Sadra Shameli
             self.lidar.setlidaropt(ydlidar.LidarPropMaxAngle, 180.0)
             self.lidar.setlidaropt(ydlidar.LidarPropMinAngle, -180.0)
             self.scan = ydlidar.LaserScan()
-        
-            # Setup Signal Handler to catch events
-            signal.signal(signal.SIGINT, SignalHandler) 
 
             # Connect YDLidar
             if not self.ConnectLidar():
-                ProgramRestart()
-
-            # Setup Webserver
-            self.log('Initializing Webserver')
-            os.system('kill -9 $(lsof -ti tcp:8080)')
-            os.system('kill -9 $(lsof -ti tcp:8000)')
-            self.webserver = HTTPServer((GetIpAddress(), 8080), functools.partial(HTTPHelper, callback=self))
-            Thread(target=self.webserver.serve_forever, daemon=True).start()            
-            Thread(target=os.system, args=[f'python3 -m http.server -b {GetIpAddress()}'], daemon=True).start()
-            self.log(f'WebServer started at {self.webserver.server_address[0]}: {self.webserver.server_address[1]} and 8000')
+                ProgramRestart()            
 
             # Setup Console Controller
-            self.ConnectController()
+            Thread(target=self.ConnectController, daemon=True).start()
             
             # Setup numpy
             numpy.set_printoptions(formatter={'float': lambda x: "{0:0.3f}".format(x)})
 
             # Setup TensorFlow tensors, model and neural network
-            self.ReadTensors()        
-
-            self.log(f'''Please control the robot via the URL {self.webserver.server_address[0]}:{self.webserver.server_address[1]} or a PS4 or PS5 controller''')
+            self.log('Initializing TensorFlow')            
+            self.ReadTensors()  
+            
+            # Setup Webserver
+            self.log('Initializing Webserver')            
+            self.StartWebServer()
+            
+            # Initialization Finished
+            self.log('Please control the robot via the created webserver or a PS4 or PS5 controller')
             self.log('Initialization done!')          
 
-            self.Runtime()            
+            self.Runtime()
             self.log('Runtime finished')
-            
-            
-        except KeyboardInterrupt:
-            self.log('Terminating Application')
-            ProjectAI._Running = False
-
+                        
+                        
         except Exception as e:
             self.log(f'Exception thrown: {e}')
         
         finally:
+            self.log('Terminating Application')            
             self.Terminate()
             
 
@@ -356,8 +365,8 @@ Made with \u2665 By Sadra Shameli
 
         # Cleaning up Webserver
         if hasattr(self, 'webserver'):
-            self.webserver.shutdown()
             self.webserver.server_close()
+            #self.webserver.shutdown()
             self.log('Deinitialized Webserver')
                         
                         
@@ -378,7 +387,7 @@ Made with \u2665 By Sadra Shameli
             if self.lidar.initialize() and self.lidar.turnOn():
                 return True
             else:
-                self.log(f'Failed to connect with YDLidar at {port}')
+                self.log(f'Failed to connect to YDLidar at {port}')
                 return False
 
 
@@ -402,6 +411,20 @@ Made with \u2665 By Sadra Shameli
         
         self.log('No console controller could be found')
         return False
+    
+    
+    # Start Webserver
+    def StartWebServer(self):
+        # Check whether the ports are useable
+        if 8080 in [i.laddr.port for i in psutil.net_connections()]:
+            os.system('kill -9 $(lsof -ti tcp:8080)')
+        if 8000 in [i.laddr.port for i in psutil.net_connections()]:
+            os.system('kill -9 $(lsof -ti tcp:8000)')
+            
+        self.webserver = HTTPServer((GetIpAddress(), 8080), functools.partial(HTTPHelper, callback=self))                
+        Process(target=self.webserver.serve_forever, daemon=True).start()            
+        Process(target=os.system, args=[f'python3 -m http.server -b {GetIpAddress()}'], daemon=True).start()
+        self.log(f'WebServer started at {GetIpAddress()}:{self.webserver.server_address[1]} and {GetIpAddress()}:8000')      
 
 
     # Moving Robot
@@ -421,7 +444,7 @@ Made with \u2665 By Sadra Shameli
     def TurnRight(self): self.Steering.max()
 
     def TurnDegree(self, angle):
-        self.Steering.angle = angle = Clamp(angle, -90, 90)
+        self.Steering.angle = angle = Clamp(angle, -90.0, 90.0)
         self.MovingHeading = math.radians(angle)
 
     def TurnRadian(self, angle):
@@ -444,11 +467,16 @@ Made with \u2665 By Sadra Shameli
         elif 'stop' in dir:
             self.Stop()
             self.TurnAhead()
-
+            
+            
+    # Correct scan angle based on sensor rotation
+    def CorrectScanAngle(self, angle):
+        return angle - HEADING_AHEAD
+        
 
     # Filter scans based on angle, returns a distance
     def FilterScansAngle(self, angle):
-        results = [Clamp(scan.range, 0.0, 1.0) for scan in self.scan.points if scan.angle - DEFAULT_APERTURE <= angle <= scan.angle + DEFAULT_APERTURE]
+        results = [Clamp(scan.range, 0.0, 1.0) for scan in self.scan.points if math.isclose(scan.angle, angle, rel_tol=DEFAULT_APERTURE)]
         if len(results):
             return numpy.mean(results)                
         return 0.0
@@ -456,7 +484,8 @@ Made with \u2665 By Sadra Shameli
     
     # Filter scans based on maximum distance, returns a scan
     def FilterScansMaxDistance(self):
-        return max(self.scan.points, key=lambda scan: scan.range)
+        results = [scan for scan in self.scan.points if HEADING_LEFT <= scan.angle <= HEADING_RIGHT]
+        return max(results, key=lambda scan: scan.range)
 
 
     # Save Nodes for the A.I. to file
@@ -480,15 +509,13 @@ Made with \u2665 By Sadra Shameli
 
     # Runtime
     def Runtime(self):
-        while ProjectAI._Running:            
+        while self._Running:
             if self.lidar.doProcessSimple(self.scan):
                 
                 if self.FollowMaxDistance:
                     scan = self.FilterScansMaxDistance()
-                    angle = math.degrees(scan.angle)
-                    self.log(f'{scan.range} | {angle}')
-                    self.TurnDegree(angle)
-                    self.MoveForward(self.MovingSpeed)                                       
+                    self.TurnRadian(self.CorrectScanAngle(scan.angle))
+                    self.MoveForward(self.MovingSpeed)    
                     
                 if self.RecordNodes:
                     self.DistanceNodes.append([
@@ -515,26 +542,18 @@ Made with \u2665 By Sadra Shameli
                         ]
                     ], dtype=numpy.float32)
                     
-                    print(distanceNodes)
-                    print('\n')
-                    
                     self.tfInterpreter.set_tensor(self.input_details[0]['index'], distanceNodes)
                     self.tfInterpreter.invoke()
                     tensor = self.tfInterpreter.get_tensor(self.output_details[0]['index'])
-
-                    heading = tensor[0][1] - HEADING_AHEAD
-                    speed = tensor[0][0] / 2
+                    heading = tensor[0][1]                    
                     
                     self.TurnRadian(heading)
-                    self.MoveForward(speed)
-
-                    print(math.degrees(heading))
+                    self.MoveForward(self.MovingSpeed)
 
             else:
                 self.Stop()
             
-            time.sleep(0.75)
-
+            time.sleep(0.05)
                 
 
     @staticmethod
