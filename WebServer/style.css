@@ -231,16 +231,26 @@ a:hover {
     transition: all 0.2s ease-out;
 }
 
+.buttonWithText {
+    min-height: fit-content;
+    height: 50px;
+    width: inherit;
+    min-width: 400px;
+    font-size: inherit;
+    font-weight: 600;
+}
+
 button:hover {
     box-shadow: 0px 5px 10px #7E6D5766;
 }
 
 .slider {
     max-width: 400px;
-    width: inherit;
     height: 50px;
+    width: inherit;
     padding: 25px;
     padding-left: 40px;
+    margin-bottom: 75px;
     background: var(--mainThemeColor);
     color: black;
     border-radius: 20px;

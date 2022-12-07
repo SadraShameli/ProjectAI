@@ -84,6 +84,16 @@ cd YDLidar-SDK
 pip install .
 ```
 
+[picamera2](https://pypi.org/project/picamera2) libary to setup the camera:
+```
+pip3 install picamera2
+```
+
+[opencv-python](https://pypi.org/project/opencv-python) libary to setup the camera:
+```
+pip install opencv-python
+```
+
 [pigpio](https://pypi.org/project/pigpio) to manage and setup the pins on the Raspberry PI:
 ```
 pip install pigpio
@@ -106,6 +116,11 @@ pip install pyPS4Controller
 pip install tflite-runtime
 ```
 
+[matplotlib](https://pypi.org/project/matplotlib) for animating:
+```
+pip install matplotlib
+```
+
 ## Change Log
 
 - Sep 11, 2022
@@ -125,6 +140,10 @@ pip install tflite-runtime
 - Nov 15, 2022
     - Created a local website for the robot, with a helper class to serve files, receive and send GET, POST requests
     - Added robot control via the website and a PS4 or PS5 controller
+- Dec 07, 2022
+    - Added camera support to the robot, A.I. now also using the camera.
+    - Improvements to the A.I. and the code.
+
 
 ## Development
 
@@ -137,7 +156,7 @@ Currently as of Nov 15, 2022, we are planning to add the following functionaliti
 
 ## Photos
 
-![ProjectAI](Documentation/Pictures/IMG_3824.jpg "ProjectAI")
+![ProjectAI](Documentation/Pictures/IMG_4007.jpg "ProjectAI")
 
 
 -----

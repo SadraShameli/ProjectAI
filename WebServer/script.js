@@ -1,7 +1,6 @@
-var speedSlider = document.getElementById("speedSlider");
-var speedSliderText = document.getElementById("speedSliderText");
+var speedSlider = document.getElementById('speedSlider');
+var speedSliderText = document.getElementById('speedSliderText');
 
-const MoveURL = "/move";
 var MotorSpeed = 10;
 
 async function MoveRobot(dir) {
@@ -10,13 +9,17 @@ async function MoveRobot(dir) {
         Speed: MotorSpeed
     };
 
-    return await fetch(MoveURL, {
+    return await fetch('?command=MoveRobot', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify(obj)
     });
+}
+
+async function OnCommand(cmd) {
+    return await fetch(`?command=${cmd}`)
 }
 
 speedSlider.onmouseup = speedSlider.ontouchend = function () {

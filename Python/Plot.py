@@ -1,6 +1,5 @@
 import sys
 import time
-import math
 import ydlidar
 
 import matplotlib.pyplot as plt
@@ -16,17 +15,21 @@ class ProjectAI:
         self.threadPool = []
 
         # YDLidar Setup
-        self.log('Initializing YDLidar SDK')
-        self.lidar = ydlidar.CYdLidar()
-        self.lidar.setlidaropt(ydlidar.LidarPropSerialBaudrate, 128000)
+        self.log('Initializing YDLidar SDK')        
+        self.lidar.setlidaropt(ydlidar.LidarPropSerialBaudrate, 128000)        
         self.lidar.setlidaropt(ydlidar.LidarPropLidarType, ydlidar.TYPE_TRIANGLE)
-        self.lidar.setlidaropt(ydlidar.LidarPropDeviceType, ydlidar.YDLIDAR_TYPE_SERIAL)
+        self.lidar.setlidaropt(ydlidar.LidarPropDeviceType, ydlidar.YDLIDAR_TYPE_SERIAL)        
+        self.lidar.setlidaropt(ydlidar.LidarPropIgnoreArray, "")
         self.lidar.setlidaropt(ydlidar.LidarPropSupportMotorDtrCtrl, True)
-        self.lidar.setlidaropt(ydlidar.LidarPropSingleChannel, False)
+        self.lidar.setlidaropt(ydlidar.LidarPropFixedResolution, True)
+        self.lidar.setlidaropt(ydlidar.LidarPropSingleChannel, True)
         self.lidar.setlidaropt(ydlidar.LidarPropAutoReconnect, True)
         self.lidar.setlidaropt(ydlidar.LidarPropIntenstiy, False)
-        self.lidar.setlidaropt(ydlidar.LidarPropReversion, True)
+        self.lidar.setlidaropt(ydlidar.LidarPropReversion, False)
+        self.lidar.setlidaropt(ydlidar.LidarPropInverted, False)
+        self.lidar.setlidaropt(ydlidar.LidarPropAbnormalCheckCount, 4)
         self.lidar.setlidaropt(ydlidar.LidarPropScanFrequency, 12.0)
+        self.lidar.setlidaropt(ydlidar.LidarPropIntenstiyBit, 0)
         self.lidar.setlidaropt(ydlidar.LidarPropSampleRate, 5)
         self.lidar.setlidaropt(ydlidar.LidarPropMaxRange, 10.0)
         self.lidar.setlidaropt(ydlidar.LidarPropMinRange, 0.12)
