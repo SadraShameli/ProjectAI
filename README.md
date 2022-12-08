@@ -111,7 +111,7 @@ pip install netifaces
 pip install pyPS4Controller
 ```
 
-[TensorFlow Lite](https://www.tensorflow.org/lite/guide/python) to run the A.I. network and procces models:
+[TensorFlow Lite](https://www.tensorflow.org/lite/guide/python) to run the A.I. network and process models:
 ```
 pip install tflite-runtime
 ```
@@ -143,7 +143,8 @@ pip install matplotlib
 - Dec 07, 2022
     - Added camera support to the robot, A.I. now also using the camera.
     - Improvements to the A.I. and the code.
-
+- Dec 08, 2022
+    - Fixed the CameraTest.py and Plot.py
 
 ## Development
 

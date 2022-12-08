@@ -1,66 +1,94 @@
 import sys
 import time
-import ydlidar
+import signal
 
+import ydlidar
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
 
+# Helper Functions
+# Low Level
+def SignalHandler(sig, frame):
+    ProjectAI._Running = False
+
+
 # ProjectAI
 class ProjectAI:
+    _Running = True
 
     # Initializer
     def __init__(self):
-        self.Running = True
-        self.threadPool = []
+        print(
+            '''
+----------------------------------------------------
+Welcome to
+ ____            _           _        _      ___
+|  _ \ _ __ ___ (_) ___  ___| |_     / \    |_ _|
+| |_) | '__/ _ \| |/ _ \/ __| __|   / _ \    | |
+|  __/| | | (_) | |  __/ (__| |_   / ___ \ _ | | _
+|_|   |_|  \___// |\___|\___|\__| /_/   \_(_)___(_)
 
-        # YDLidar Setup
-        self.log('Initializing YDLidar SDK')        
-        self.lidar.setlidaropt(ydlidar.LidarPropSerialBaudrate, 128000)        
-        self.lidar.setlidaropt(ydlidar.LidarPropLidarType, ydlidar.TYPE_TRIANGLE)
-        self.lidar.setlidaropt(ydlidar.LidarPropDeviceType, ydlidar.YDLIDAR_TYPE_SERIAL)        
-        self.lidar.setlidaropt(ydlidar.LidarPropIgnoreArray, "")
-        self.lidar.setlidaropt(ydlidar.LidarPropSupportMotorDtrCtrl, True)
-        self.lidar.setlidaropt(ydlidar.LidarPropFixedResolution, True)
-        self.lidar.setlidaropt(ydlidar.LidarPropSingleChannel, True)
-        self.lidar.setlidaropt(ydlidar.LidarPropAutoReconnect, True)
-        self.lidar.setlidaropt(ydlidar.LidarPropIntenstiy, False)
-        self.lidar.setlidaropt(ydlidar.LidarPropReversion, False)
-        self.lidar.setlidaropt(ydlidar.LidarPropInverted, False)
-        self.lidar.setlidaropt(ydlidar.LidarPropAbnormalCheckCount, 4)
-        self.lidar.setlidaropt(ydlidar.LidarPropScanFrequency, 12.0)
-        self.lidar.setlidaropt(ydlidar.LidarPropIntenstiyBit, 0)
-        self.lidar.setlidaropt(ydlidar.LidarPropSampleRate, 5)
-        self.lidar.setlidaropt(ydlidar.LidarPropMaxRange, 10.0)
-        self.lidar.setlidaropt(ydlidar.LidarPropMinRange, 0.12)
-        self.lidar.setlidaropt(ydlidar.LidarPropMaxAngle, 180.0)
-        self.lidar.setlidaropt(ydlidar.LidarPropMinAngle, -180.0)
-        self.scan = ydlidar.LaserScan()
+Made with \u2665 By Sadra Shameli
+----------------------------------------------------
+'''
+        )
+        try:
+            # Setup Signal Handler to catch events
+            signal.signal(signal.SIGINT, SignalHandler)
 
-        while not self.ConnectLidar():
-            time.sleep(0.25)
+            # Setup YDLidar
+            self.log('Initializing YDLidar SDK')
+            self.lidar = ydlidar.CYdLidar()
+            self.lidar.setlidaropt(ydlidar.LidarPropSerialBaudrate, 128000)
+            self.lidar.setlidaropt(ydlidar.LidarPropLidarType, ydlidar.TYPE_TRIANGLE)
+            self.lidar.setlidaropt(ydlidar.LidarPropDeviceType, ydlidar.YDLIDAR_TYPE_SERIAL)
+            self.lidar.setlidaropt(ydlidar.LidarPropIgnoreArray, '')
+            self.lidar.setlidaropt(ydlidar.LidarPropSupportMotorDtrCtrl, True)
+            self.lidar.setlidaropt(ydlidar.LidarPropFixedResolution, True)
+            self.lidar.setlidaropt(ydlidar.LidarPropSingleChannel, True)
+            self.lidar.setlidaropt(ydlidar.LidarPropAutoReconnect, True)
+            self.lidar.setlidaropt(ydlidar.LidarPropIntenstiy, False)
+            self.lidar.setlidaropt(ydlidar.LidarPropReversion, False)
+            self.lidar.setlidaropt(ydlidar.LidarPropInverted, False)
+            self.lidar.setlidaropt(ydlidar.LidarPropAbnormalCheckCount, 4)
+            self.lidar.setlidaropt(ydlidar.LidarPropScanFrequency, 12.0)
+            self.lidar.setlidaropt(ydlidar.LidarPropIntenstiyBit, 0)
+            self.lidar.setlidaropt(ydlidar.LidarPropSampleRate, 5)
+            self.lidar.setlidaropt(ydlidar.LidarPropMaxRange, 10.0)
+            self.lidar.setlidaropt(ydlidar.LidarPropMinRange, 0.12)
+            self.lidar.setlidaropt(ydlidar.LidarPropMaxAngle, 180.0)
+            self.lidar.setlidaropt(ydlidar.LidarPropMinAngle, -180.0)
+            self.scan = ydlidar.LaserScan()
 
-        # Animation setup
-        self.figure = plt.figure()
-        self.lidar_polar = plt.subplot(polar=True)
-        self.lidar_polar.autoscale_view(True, True, True)
+            # Connect YDLidar
+            if not self.ConnectLidar():
+                sys.exit()
 
-        self.log('Initialization done!')
+            # Animation setup
+            self.figure = plt.figure()
+            self.lidar_polar = plt.subplot(polar=True)
+            self.lidar_polar.autoscale_view(True, True, True)
+
+            # Initialization Finished
+            self.log('Initialization done!')
+
+            self.Runtime()
+            self.log('Runtime finished')
+
+        except Exception as e:
+            self.log(f'Exception thrown: {e}')
+
+        finally:
+            self.log('Terminating Application')
+            self.Terminate()
 
     # Deinitializer
     def __del__(self):
         self.log('Deinitializing')
-        if self.Running:
-            self.Terminate()
 
-    # Stops the threads, cleans up
+    # Called once application is terminated
     def Terminate(self):
-        self.Running = False
-
-        # Waiting for threads to finish
-        for thread in self.threadPool:
-            thread.join()
-        self.log("Threads finished")
 
         # Cleaning up Animation
         plt.close()
@@ -74,6 +102,7 @@ class ProjectAI:
 
     # Search for YDLidar devices
     def ConnectLidar(self):
+
         portList = ydlidar.lidarPortList().items()
         if len(portList) == 0:
             self.log('No YDLidar device could be found')
@@ -89,9 +118,10 @@ class ProjectAI:
             if self.lidar.initialize() and self.lidar.turnOn():
                 return True
             else:
-                self.log(f'Failed to connect with YDLidar at {port}')
+                self.log(f'Failed to connect to YDLidar at {port}')
                 return False
 
+    # Plot the lidar output
     def Animate(self, num):
         if self.lidar.doProcessSimple(self.scan):
             angle = []
@@ -104,11 +134,12 @@ class ProjectAI:
             self.lidar_polar.clear()
             self.lidar_polar.scatter(angle, range, c=intensity, cmap='hsv', alpha=0.95)
 
-    # Runtime
+            # Runtime
     def Runtime(self):
-        anim = animation.FuncAnimation(self.figure, self.Animate, interval=50)
-        plt.show()
-        time.sleep(sys.maxsize)
+        while self._Running:
+            anim = animation.FuncAnimation(self.figure, self.Animate, interval=50)
+            plt.show()
+            time.sleep(sys.maxsize)
 
     @staticmethod
     def log(*args):
@@ -116,17 +147,4 @@ class ProjectAI:
 
 
 # Main Entrance
-# Catching errors
-try:
-    # Instantiating Main Application
-    s_Robot = ProjectAI()
-
-    # Loop indefinitely
-    while s_Robot.Running:
-        s_Robot.Runtime()
-
-except KeyboardInterrupt:
-    print('Terminating Application')
-
-except Exception as e:
-    print(f'Exception thrown: {e}')
+robot = ProjectAI()
