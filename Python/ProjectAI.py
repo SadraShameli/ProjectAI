@@ -706,7 +706,7 @@ Made with \u2665 By Sadra Shameli
             if not USE_CAMERA and not self.lidar.doProcessSimple(self.scan):
                 self.Stop()
                 time.sleep(0.5)
-                return
+                continue
 
             if self.FollowAI:
                 if USE_CAMERA:
@@ -770,7 +770,7 @@ Made with \u2665 By Sadra Shameli
                 self.TurnRadian(self.CorrectScanAngle(scan.angle))
                 self.MoveForward(self.MovingSpeed)
 
-            time.sleep(0.05)
+            time.sleep(0.1)
 
     @staticmethod
     def log(*args):

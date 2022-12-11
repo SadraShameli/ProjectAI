@@ -5,7 +5,11 @@ Its inspiration originates from being a big fan of Elon Musk, Tesla and its tech
 This project is mainly created for PWS (profielwerkstuk) using our own specific hardware, but it can be replicated by the user to work on their hardware as well.
 
 You can visit my social profiles using the following links: 
-[Linkedin](https://www.linkedin.com/in/sadra-shameli-35844b1b3) | [Instagram](https://www.instagram.com/sadra_shml/)
+[YouTube](https://www.youtube.com/@sadrashameli) | [Linkedin](https://www.linkedin.com/in/sadra-shameli-35844b1b3) | [Instagram](https://www.instagram.com/sadra_shml/)
+
+
+![ProjectAI](Documentation/Pictures/IMG_4007.jpg "ProjectAI")
+
 
 ## Features
 
@@ -154,10 +158,6 @@ Currently as of Nov 15, 2022, we are planning to add the following functionaliti
 - Add Webserver support to the C++ source code
 - Add console controller support to the C++ source code
 - Add documentation on how to connect to Raspberry Pi wirelessly with SSH connection
-
-## Photos
-
-![ProjectAI](Documentation/Pictures/IMG_4007.jpg "ProjectAI")
 
 
 -----
