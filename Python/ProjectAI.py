@@ -56,6 +56,10 @@ AI_IMAGE_NODES_FILE = f'{AI_FOLDER}/ImageNodes.csv'
 AI_DISTANCE_NODES_FILE = f'{AI_FOLDER}/DistanceNodes.npy'
 AI_INPUT_NODES_FILE = f'{AI_FOLDER}/InputNodes.npy'
 DEFAULT_APERTURE = math.radians(5)
+LIDAR_RANGE_MIN = 0.12
+LIDAR_RANGE_MAX = 10.0
+LIDAR_ANGLE_MIN = -180.0
+LIDAR_ANGLE_MAX = 180.0
 USE_CAMERA = False
 
 
@@ -454,10 +458,10 @@ Made with \u2665 By Sadra Shameli
             self.lidar.setlidaropt(ydlidar.LidarPropScanFrequency, 12.0)
             self.lidar.setlidaropt(ydlidar.LidarPropIntenstiyBit, 0)
             self.lidar.setlidaropt(ydlidar.LidarPropSampleRate, 5)
-            self.lidar.setlidaropt(ydlidar.LidarPropMaxRange, 10.0)
-            self.lidar.setlidaropt(ydlidar.LidarPropMinRange, 0.12)
-            self.lidar.setlidaropt(ydlidar.LidarPropMaxAngle, 180.0)
-            self.lidar.setlidaropt(ydlidar.LidarPropMinAngle, -180.0)
+            self.lidar.setlidaropt(ydlidar.LidarPropMinRange, LIDAR_RANGE_MIN)
+            self.lidar.setlidaropt(ydlidar.LidarPropMaxRange, LIDAR_RANGE_MAX)
+            self.lidar.setlidaropt(ydlidar.LidarPropMinAngle, LIDAR_ANGLE_MIN)
+            self.lidar.setlidaropt(ydlidar.LidarPropMaxAngle, LIDAR_ANGLE_MAX)
             self.scan = ydlidar.LaserScan()
 
             # Setup camera
@@ -528,7 +532,6 @@ Made with \u2665 By Sadra Shameli
             self.log('Deinitialized camera')
 
     # Search for YDLidar devices
-
     def ConnectLidar(self):
 
         portList = ydlidar.lidarPortList().items()
@@ -640,8 +643,9 @@ Made with \u2665 By Sadra Shameli
         return angle - HEADING_AHEAD
 
     # Filter scans based on angle, returns a distance
-    def FilterScansAngle(self, angle):
-        results = [Clamp(scan.range, 0.0, 1.0) for scan in self.scan.points if math.isclose(scan.angle, angle, rel_tol=DEFAULT_APERTURE)]
+    def FilterScansAngle(self, angle):        
+        results = [MapRange(scan.range, LIDAR_RANGE_MIN, LIDAR_RANGE_MAX, 0.0, 1.0) for scan in self.scan.points
+                   if math.isclose(scan.angle, angle, rel_tol=DEFAULT_APERTURE)]
         if len(results):
             return numpy.mean(results)
         return 0.0
@@ -719,35 +723,30 @@ Made with \u2665 By Sadra Shameli
                     tensor = self.tfInterpreter.get_tensor(self.output_details[0]['index'])
                     node = tensor[0]
                     # print(node)
-
+                    
                     heading = MapRange(node[0], -1.0, 1.0, HEADING_LEFT, HEADING_RIGHT)
                     self.TurnRadian(heading)
-                    self.MoveForward(self.MovingSpeed)
+                    #self.MoveForward(node[1])
 
                 else:
-                    distanceNodes = numpy.array(
+                    distanceNodes = numpy.array([
                         [
-                            [
-                                self.FilterScansAngle(HEADING_LEFT),
-                                self.FilterScansAngle(HEADING_HIGHERLEFT),
-                                self.FilterScansAngle(HEADING_TOPLEFT),
-                                self.FilterScansAngle(HEADING_TOPRIGHT),
-                                self.FilterScansAngle(HEADING_HIGHERRIGHT),
-                                self.FilterScansAngle(HEADING_RIGHT),
-                            ]
-                        ],
-                        dtype=numpy.float32,
-                    )
+                            self.FilterScansAngle(HEADING_LEFT),
+                            self.FilterScansAngle(HEADING_HIGHERLEFT),
+                            self.FilterScansAngle(HEADING_TOPLEFT),
+                            self.FilterScansAngle(HEADING_TOPRIGHT),
+                            self.FilterScansAngle(HEADING_HIGHERRIGHT),
+                            self.FilterScansAngle(HEADING_RIGHT),
+                        ]], dtype=numpy.float32)
 
                     self.tfInterpreter.set_tensor(self.input_details[0]['index'], distanceNodes)
                     self.tfInterpreter.invoke()
                     tensor = self.tfInterpreter.get_tensor(self.output_details[0]['index'])
                     node = tensor[0]
-                    # print(node)
 
                     heading = MapRange(node[1], -1.0, 1.0, HEADING_LEFT, HEADING_RIGHT)
                     self.TurnRadian(heading)
-                    self.MoveForward(self.MovingSpeed)
+                    #self.MoveForward(node[0])
 
             if self.RecordNodes:
                 if USE_CAMERA:
@@ -768,9 +767,8 @@ Made with \u2665 By Sadra Shameli
             if self.FollowMaxDistance:
                 scan = self.FilterScansMaxDistance()
                 self.TurnRadian(self.CorrectScanAngle(scan.angle))
-                self.MoveForward(self.MovingSpeed)
-
-            time.sleep(0.1)
+                
+            time.sleep(0.75)
 
     @staticmethod
     def log(*args):
