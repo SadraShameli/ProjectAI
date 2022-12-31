@@ -8,45 +8,44 @@ You can visit my social profiles using the following links:
 [YouTube](https://www.youtube.com/@sadrashameli) | [Linkedin](https://www.linkedin.com/in/sadra-shameli-35844b1b3) | [Instagram](https://www.instagram.com/sadra_shml/)
 
 
-![ProjectAI](Documentation/Pictures/IMG_4007.jpg "ProjectAI")
+![ProjectAI](Documentation/Pictures/DSC0568.jpg "ProjectAI")
 
 
 ## Features
 
 - Fully autonomous driving without any input from the user
-- Ability to manually control using a PS4 - PS5 controller
-- Ability to manually control using the website created on the local WiFi
+- Ability to manually control using a PS4 or PS5 controller
+- Ability to manually control using the website created on the local WiFi network
 - Displaying a 2D model of the surroundings on the website 
 - Making use of the well-proven machine learning library [TensorFlow](https://github.com/tensorflow/tensorflow)
-- Source code written in both Python and C++ (currently under development)
 - Using threads and thread pooling for every core functionality
-- Integrating modules to maintain the code better
-- Using the latest Raspberry Pi 4B+ for faster operations
+- Source code written in both Python and C++ (currently under development)
+
 
 ## Notes
 
 - Every core functionality of the robot is assigned to a separate thread, all managed in a thread pool. This makes the robot able to:
     - Run the artificial intelligence continuously
-    - Automatically connect to a console controller, once available
+    - Automatically connect to a console controller, once it becomes available
     - Continuously run the webserver, without interfering with the core functionality
-    - Scan the environment with the YDLidar sensor, create a 2D model
+    - Scan the environment with the YDLidar sensor and create a 2D model
 
 ## Installation
 
-To install the latest release, start by cloning this repository. Please don't forget to clone recursively as this repository uses modules which otherwise won't be downloaded.
+To install the latest release, start by cloning this repository. Please don't forget to use the "--recursive" flag when cloning, as this repository uses modules which will not be downloaded otherwise.
 
 ```
 git clone https://github.com/SadraShameli/ProjectAI --recursive
 ```
 
-For your convinience, there is a shell script available which will automatically install the required dependencies.
+For your convenience, there is a shell script available which will automatically install the required dependencies.
 
 ```
 cd ProjectAI/
 sudo bash Setup.sh
 ```
 
-To connect to your Raspberry Pi on a computer wirelessly through SSH connection, please follow the next steps on your main computer.
+To connect to your Raspberry Pi on a computer wirelessly via SSH, please follow these steps on your main computer:
 
 Navigate to the following folder:
 
@@ -68,8 +67,8 @@ sudo bash ssh-setup.sh
 
 ## Dependencies
 
-Note: this step is not required if you run the automated shell script from the Installation section to install the dependencies.
-The python code uses different modules to add additional functionalities. These are listed below and can be installed using their respective commands.
+Note: this step is not required if you have already run the automated shell script from the Installation section to install the dependencies.
+The python code uses different modules to add additional functionalities. These modules are listed below and can be installed using the respective commands.
 
 [CMake](https://pypi.org/project/cmake) to build the source code:
 ```
@@ -110,7 +109,7 @@ sudo systemctl start pigpiod
 pip install netifaces
 ```
 
-[pyPS4Controller](https://pypi.org/project/pyPS4Controller) to connect and control a PS4 - PS5 controller:
+[pyPS4Controller](https://pypi.org/project/pyPS4Controller) to connect and control a PS4 or PS5 controller:
 ```
 pip install pyPS4Controller
 ```
@@ -161,6 +160,6 @@ Currently as of Nov 15, 2022, we are planning to add the following functionaliti
 
 
 -----
-Disclaimer: Please note that this project is currently under development. Various tests are done to make it bug free, but there is always room for error.
+Disclaimer: Please note that this project is currently under development. Various tests are conducted to make it bug-free, but there is always the possibility of errors.
 
 Created with ♥ and maintained by Sadra Shameli. All Rights Reserved.
