@@ -27,7 +27,7 @@ You can visit my social profiles using the following links:
 - Every core functionality of the robot is assigned to a separate thread, all managed in a thread pool. This makes the robot able to:
     - Run the artificial intelligence continuously
     - Automatically connect to a console controller, once it becomes available
-    - Continuously run the webserver, without interfering with the core functionality
+    - Continuously run the web server, without interfering with the core functionality
     - Scan the environment with the YDLidar sensor and create a 2D model
 
 ## Installation
@@ -87,12 +87,12 @@ cd YDLidar-SDK
 pip install .
 ```
 
-[picamera2](https://pypi.org/project/picamera2) libary to setup the camera:
+[picamera2](https://pypi.org/project/picamera2) library to setup the camera:
 ```
 pip3 install picamera2
 ```
 
-[opencv-python](https://pypi.org/project/opencv-python) libary to setup the camera:
+[opencv-python](https://pypi.org/project/opencv-python) library to setup the camera:
 ```
 pip install opencv-python
 ```
@@ -154,7 +154,7 @@ pip install matplotlib
 Currently as of Nov 15, 2022, we are planning to add the following functionalities to the robot in the near future:
 
 - Add environmental data gathering and displaying on the website. For example, sound level measurements, temperature, humanity and more
-- Add Webserver support to the C++ source code
+- Add web server support to the C++ source code
 - Add console controller support to the C++ source code
 - Add documentation on how to connect to Raspberry Pi wirelessly with SSH connection
 
