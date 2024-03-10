@@ -4,9 +4,6 @@ The purpose of this project is to create an autonomous self-driving robot, which
 Its inspiration originates from being a big fan of Elon Musk, Tesla and its technology.
 This project is mainly created for PWS (profielwerkstuk) using our own specific hardware, but it can be replicated by the user to work on their hardware as well.
 
-You can visit my social profiles using the following links:
-[YouTube](https://www.youtube.com/@sadrashameli) | [Linkedin](https://www.linkedin.com/in/sadra-shameli-35844b1b3) | [Instagram](https://www.instagram.com/sadra_shml/)
-
 ![ProjectAI](Documentation/Pictures/DSC0568.jpg "ProjectAI")
 
 ## Features
