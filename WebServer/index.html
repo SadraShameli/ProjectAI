@@ -1,95 +1,197 @@
 <!DOCTYPE html>
 <html>
-
-<head>
+  <head>
     <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
-    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css">
+    <link
+      rel="stylesheet"
+      href="https://unicons.iconscout.com/release/v4.0.0/css/line.css"
+    />
 
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css" />
     <title>Project A.I.</title>
-    <meta name=" viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-</head>
+    <meta
+      name=" viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+  </head>
 
-<body>
+  <body>
     <div class="container verticalFlex">
-        <div class="mainDiv">
+      <div class="mainDiv">
+        <h1>Welcome To Project A.I.</h1>
+        <div class="mainChartContainer">
+          <div class="user verticalFlex">
+            <lottie-player
+              src="https://assets1.lottiefiles.com/datafiles/HN7OcWNnoqje6iXIiZdWzKxvLIbfeCGTmvXmEm1h/data.json"
+              background="transparent"
+              speed="1"
+              style="width: 400px; height: 200px"
+              loop
+              autoplay
+              preserveAspectRatio="xMidYMid slice"
+            ></lottie-player>
+          </div>
 
+          <p class="lineBreaker"></p>
+          <h2>
+            Please use the buttons below to control the direction and the
+            slider to change the speed of the robot.
+          </h2>
 
-            <h1>Welcome To Project A.I.</h1>
-            <div class="mainChartContainer">
-
-                <div class="user verticalFlex">
-                    <lottie-player src="https://assets1.lottiefiles.com/datafiles/HN7OcWNnoqje6iXIiZdWzKxvLIbfeCGTmvXmEm1h/data.json" background="transparent" speed="1" style="width: 400px; height: 200px;" loop autoplay preserveAspectRatio="xMidYMid slice"></lottie-player>
-                </div>
-
-                <p class="lineBreaker"></p>
-                <h2>Please use the buttons below to control the direction and the slider to change the speed of the Robot.</h2>
-
-                <div class="user verticalFlex">
-                    <div class="control-section">
-                        <table>
-                            <tr>
-                                <td colspan="3" align="center">
-                                    <button class="button" onmousedown="MoveRobot('forward');" ontouchstart="MoveRobot('forward');" onmouseup="MoveRobot('stop');" ontouchend="MoveRobot('stop');"><i class="uil uil-arrow-up"></i></button>
-
-                                </td>
-                            </tr>
-                            <tr>
-                                <td align="center"><button class="button" onmousedown="MoveRobot('left');" ontouchstart="MoveRobot('left');" onmouseup="MoveRobot('stop');" ontouchend="MoveRobot('stop');"><i class="uil uil-arrow-left"></i></button>
-                                </td>
-                                <td align="center"><button class="button" onmousedown="MoveRobot('stop');" ontouchstart="MoveRobot('stop');"><i class="uil uil-stop-circle"></i></button>
-                                </td>
-                                <td align="center"><button class="button" onmousedown="MoveRobot('right');" ontouchstart="MoveRobot('right');" onmouseup="MoveRobot('stop');" ontouchend="MoveRobot('stop');"><i class="uil uil-arrow-right"></i></button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td colspan="3" align="center"><button class="button" onmousedown="MoveRobot('backward');" ontouchstart="MoveRobot('backward');" onmouseup="MoveRobot('stop');" ontouchend="MoveRobot('stop');"><i class="uil uil-arrow-down"></i></button></td>
-                            </tr>
-                        </table>
-                    </div>
-                    <div class="slider">
-                        <input type="range" min="0" max="100" value="10" id="speedSlider">
-                        <p id="speedSliderText">10</p>
-                    </div>
-                </div>
-
-                <p class="lineBreaker"></p>
-                <h2>Please use the buttons below to give orders to the Robot.</h2>
-
-                <div class="verticalFlex">
-                    <button class="button buttonWithText" onmousedown="OnCommand('CaptureImage');" ontouchstart="OnCommand('FollowAI');">Capture Image to File</button>
-                    <button class="button buttonWithText" onmousedown="OnCommand('FollowAI');" ontouchstart="OnCommand('FollowAI');" onmouseup="OnCommand('Stop');" ontouchend="OnCommand('Stop');">Follow A.I.</button>
-                    <button class="button buttonWithText" onmousedown="OnCommand('FollowMaxDistance');" ontouchstart="OnCommand('FollowMaxDistance');" onmouseup="OnCommand('Stop');" ontouchend="OnCommand('Stop');">Follow Max Distance Algorithm</button>
-                    <button class="button buttonWithText" onmousedown="OnCommand('RecordNodes');" ontouchstart="OnCommand('RecordNodes');" onmouseup="OnCommand('StopRecordingNodes');" ontouchend="OnCommand('StopRecordingNodes');">Record and Save A.I. nodes</button>
-                    <button class="button buttonWithText" onmousedown="OnCommand('Stop');" ontouchstart="OnCommand('Stop');">Stop, clear all recordings</button>
-                </div>
-
+          <div class="user verticalFlex">
+            <div class="control-section">
+              <table>
+                <tr>
+                  <td colspan="3" align="center">
+                    <button
+                      class="button"
+                      onmousedown="MoveRobot('forward');"
+                      ontouchstart="MoveRobot('forward');"
+                      onmouseup="MoveRobot('stop');"
+                      ontouchend="MoveRobot('stop');"
+                    >
+                      <i class="uil uil-arrow-up"></i>
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center">
+                    <button
+                      class="button"
+                      onmousedown="MoveRobot('left');"
+                      ontouchstart="MoveRobot('left');"
+                      onmouseup="MoveRobot('stop');"
+                      ontouchend="MoveRobot('stop');"
+                    >
+                      <i class="uil uil-arrow-left"></i>
+                    </button>
+                  </td>
+                  <td align="center">
+                    <button
+                      class="button"
+                      onmousedown="MoveRobot('stop');"
+                      ontouchstart="MoveRobot('stop');"
+                    >
+                      <i class="uil uil-stop-circle"></i>
+                    </button>
+                  </td>
+                  <td align="center">
+                    <button
+                      class="button"
+                      onmousedown="MoveRobot('right');"
+                      ontouchstart="MoveRobot('right');"
+                      onmouseup="MoveRobot('stop');"
+                      ontouchend="MoveRobot('stop');"
+                    >
+                      <i class="uil uil-arrow-right"></i>
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan="3" align="center">
+                    <button
+                      class="button"
+                      onmousedown="MoveRobot('backward');"
+                      ontouchstart="MoveRobot('backward');"
+                      onmouseup="MoveRobot('stop');"
+                      ontouchend="MoveRobot('stop');"
+                    >
+                      <i class="uil uil-arrow-down"></i>
+                    </button>
+                  </td>
+                </tr>
+              </table>
             </div>
+            <div class="slider">
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value="10"
+                id="speedSlider"
+              />
+              <p id="speedSliderText">10</p>
+            </div>
+          </div>
+
+          <p class="lineBreaker"></p>
+          <h2>Please use the buttons below to give orders to the Robot.</h2>
+
+          <div class="verticalFlex">
+            <button
+              class="button buttonWithText"
+              onmousedown="OnCommand('CaptureImage');"
+              ontouchstart="OnCommand('FollowAI');"
+            >
+              Capture Image to File
+            </button>
+            <button
+              class="button buttonWithText"
+              onmousedown="OnCommand('FollowAI');"
+              ontouchstart="OnCommand('FollowAI');"
+              onmouseup="OnCommand('Stop');"
+              ontouchend="OnCommand('Stop');"
+            >
+              Follow A.I.
+            </button>
+            <button
+              class="button buttonWithText"
+              onmousedown="OnCommand('FollowMaxDistance');"
+              ontouchstart="OnCommand('FollowMaxDistance');"
+              onmouseup="OnCommand('Stop');"
+              ontouchend="OnCommand('Stop');"
+            >
+              Follow Max Distance Algorithm
+            </button>
+            <button
+              class="button buttonWithText"
+              onmousedown="OnCommand('RecordNodes');"
+              ontouchstart="OnCommand('RecordNodes');"
+              onmouseup="OnCommand('StopRecordingNodes');"
+              ontouchend="OnCommand('StopRecordingNodes');"
+            >
+              Record and Save A.I. nodes
+            </button>
+            <button
+              class="button buttonWithText"
+              onmousedown="OnCommand('Stop');"
+              ontouchstart="OnCommand('Stop');"
+            >
+              Stop, clear all recordings
+            </button>
+          </div>
         </div>
+      </div>
 
-        <footer class="footerContainer">
-            <div class="footer">
-                <section class="footerContentMain">
-                    <h5>Project A.I.</h5>
-                    <p>
-                        The purpose of this project is to create an autonomous self driving robot, which is able to
-                        follow a course and avoid obstacles, all on its own. Its inspiration originates from being a
-                        big fan of Elon Musk, Tesla and its technology.
-                        <a href="https://github.com/SadraShameli/ProjectAI">Github <i class="uil uil-github"></i></a>
-                        <a href="https://www.linkedin.com/in/sadra-shameli-35844b1b3">Linkdin <i class="uil uil-linkedin"></i></a>
-                    </p>
-                </section>
-                <section class="footerContent">
-                    <p class="footerDisclaimerText">
-                        <i class="uil uil-copyright"></i> Disclaimer: This project is created with <i class="uil uil-heart-sign"></i> and maintained by Sadra Shameli. All Rights Reserved.<br>
-                    </p>
-                </section>
-            </div>
-        </footer>
-
+      <footer class="footerContainer">
+        <div class="footer">
+          <section class="footerContentMain">
+            <h5>Project A.I.</h5>
+            <p>
+              The purpose of this project is to create an autonomous self
+              driving robot, which is able to follow a course and avoid
+              obstacles, all on its own. Its inspiration originates from being a
+              big fan of Elon Musk, Tesla and its technology.
+              <br />
+              <a href="https://github.com/SadraShameli/ProjectAI"
+                >Github <i class="uil uil-github"></i
+              ></a>
+              -
+              <a href="https://www.linkedin.com/in/sadra-shameli-35844b1b3"
+                >Linkedin <i class="uil uil-linkedin"></i
+              ></a>
+            </p>
+          </section>
+          <section class="footerContent">
+            <p class="footerDisclaimerText">
+              <i class="uil uil-copyright"></i> Disclaimer: This project is
+              created with <i class="uil uil-heart-sign"></i> and maintained by
+              Sadra Shameli. All Rights Reserved.<br />
+            </p>
+          </section>
+        </div>
+      </footer>
     </div>
     <script src="script.js"></script>
-
-</body>
-
+  </body>
 </html>

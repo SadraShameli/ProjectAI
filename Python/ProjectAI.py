@@ -27,11 +27,11 @@ from pyPS4Controller.controller import Controller
 # Constants
 CURRENT_FOLDER = os.path.dirname(os.path.realpath(__file__))
 PROJECT_FOLDER = os.path.dirname(CURRENT_FOLDER)
-WEBSERVER_FOLDER = f'{PROJECT_FOLDER}/WebServer'
-IMAGES_FOLDER = f'{PROJECT_FOLDER}/Captured Images'
-CONTROLLER_ADDRESS = '/dev/input/js'
+WEBSERVER_FOLDER = f"{PROJECT_FOLDER}/WebServer"
+IMAGES_FOLDER = f"{PROJECT_FOLDER}/Captured Images"
+CONTROLLER_ADDRESS = "/dev/input/js"
 HTTP_SERVER_PORT = 8080
-DATETIME_FORMATE = '%B %d, %Y - %H·%M·%S'
+DATETIME_FORMATE = "%B %d, %Y - %H·%M·%S"
 
 # Movement
 HEADING_LEFT = math.pi * 0.0
@@ -48,13 +48,13 @@ CAMERA_WIDTH = 3280
 CAMERA_HEIGHT = 2464
 
 # A.I.
-AI_FOLDER = f'{CURRENT_FOLDER}/AI'
-AI_FOLDER_IMAGES = f'{AI_FOLDER}/Images'
-AI_MODEL_CAMERA_FILE = f'{AI_FOLDER}/Camera.tflite'
-AI_MODEL_LIDAR_FILE = f'{AI_FOLDER}/Lidar.tflite'
-AI_IMAGE_NODES_FILE = f'{AI_FOLDER}/ImageNodes.csv'
-AI_DISTANCE_NODES_FILE = f'{AI_FOLDER}/DistanceNodes.npy'
-AI_INPUT_NODES_FILE = f'{AI_FOLDER}/InputNodes.npy'
+AI_FOLDER = f"{CURRENT_FOLDER}/AI"
+AI_FOLDER_IMAGES = f"{AI_FOLDER}/Images"
+AI_MODEL_CAMERA_FILE = f"{AI_FOLDER}/Camera.tflite"
+AI_MODEL_LIDAR_FILE = f"{AI_FOLDER}/Lidar.tflite"
+AI_IMAGE_NODES_FILE = f"{AI_FOLDER}/ImageNodes.csv"
+AI_DISTANCE_NODES_FILE = f"{AI_FOLDER}/DistanceNodes.npy"
+AI_INPUT_NODES_FILE = f"{AI_FOLDER}/InputNodes.npy"
 DEFAULT_APERTURE = math.radians(5)
 LIDAR_RANGE_MIN = 0.12
 LIDAR_RANGE_MAX = 10.0
@@ -70,14 +70,14 @@ def SignalHandler(sig, frame):
 
 
 def ProgramRestart():
-    Process(target=os.execv, args=[sys.executable, ['python'] + sys.argv]).start()
+    Process(target=os.execv, args=[sys.executable, ["python"] + sys.argv]).start()
     os._exit(0)
 
 
 def KillProcesses(cmd):
     listProcesses = os.popen(cmd).read()
     for process in listProcesses.splitlines():
-        os.system(f'kill -9 {process}')
+        os.system(f"kill -9 {process}")
 
 
 def DeleteFile(path):
@@ -86,11 +86,11 @@ def DeleteFile(path):
 
 
 def GetIpAddress():
-    return ni.ifaddresses('wlan0')[ni.AF_INET][0]['addr']
+    return ni.ifaddresses("wlan0")[ni.AF_INET][0]["addr"]
 
 
 def DeleteAllFilesInFolder(folder):
-    files = glob.glob(f'{folder}/*')
+    files = glob.glob(f"{folder}/*")
     for file in files:
         os.remove(file)
 
@@ -115,11 +115,11 @@ class ScopedTimer:
     # Deinitializer
     def __del__(self):
         elapsedTime = time.perf_counter() - self.StartTime
-        self.log(f'{self.Name} took {elapsedTime * 1000.0:0.4f} ms')
+        self.log(f"{self.Name} took {elapsedTime * 1000.0:0.4f} ms")
 
     @staticmethod
     def log(*args):
-        print(f'[ScopedTimer] {args[0]}')
+        print(f"[ScopedTimer] {args[0]}")
 
 
 # HTTP Helper
@@ -133,56 +133,55 @@ class HTTPHelper(BaseHTTPRequestHandler):
     # Handle GET requests
     def do_GET(self):
         try:
-            queryParameters = dict(parse.parse_qsl(
-                parse.urlsplit(self.path).query))
+            queryParameters = dict(parse.parse_qsl(parse.urlsplit(self.path).query))
 
             if not queryParameters:
-                if self.path == '/':
-                    self.path = '/index.html'
+                if self.path == "/":
+                    self.path = "/index.html"
 
-                if '.' in self.path:
-                    with open(f'{WEBSERVER_FOLDER}{self.path}', 'rb') as f:
+                if "." in self.path:
+                    with open(f"{WEBSERVER_FOLDER}{self.path}", "rb") as f:
                         self.send_200()
                         self.wfile.write(f.read())
 
-                        self.log(f'File served: {self.path}')
+                        self.log(f"File served: {self.path}")
 
                 else:
                     self.send_404()
                     return
 
             else:
-                command = queryParameters.get('command')
+                command = queryParameters.get("command")
 
-                if command == 'Terminate':
+                if command == "Terminate":
                     self.send_200()
                     ProjectAI._Running = False
 
-                elif command == 'Restart':
+                elif command == "Restart":
                     self.send_200()
                     ProgramRestart()
 
-                elif command == 'Reboot':
+                elif command == "Reboot":
                     self.send_200()
-                    os.system('sudo reboot')
+                    os.system("sudo reboot")
 
-                elif command == 'CaptureImage':
+                elif command == "CaptureImage":
                     self.callback.CaptureImage()
 
-                elif command == 'FollowAI':
+                elif command == "FollowAI":
                     self.callback.FollowAI = True
 
-                elif command == 'FollowMaxDistance':
+                elif command == "FollowMaxDistance":
                     self.callback.FollowMaxDistance = True
 
-                elif command == 'RecordNodes':
+                elif command == "RecordNodes":
                     self.callback.RecordNodes = True
 
-                elif command == 'StopRecordingNodes':
+                elif command == "StopRecordingNodes":
                     self.callback.RecordNodes = False
                     self.callback.SaveNodes()
 
-                elif command == 'Stop':
+                elif command == "Stop":
                     self.callback.RecordNodes = False
                     self.callback.FollowAI = False
                     self.callback.FollowMaxDistance = False
@@ -198,23 +197,23 @@ class HTTPHelper(BaseHTTPRequestHandler):
         except FileNotFoundError as e:
             self.send_response(404)
             self.end_headers()
-            self.log(f'File or directory not found: {e.filename}')
+            self.log(f"File or directory not found: {e.filename}")
 
         except Exception as e:
             self.send_response(500)
             self.end_headers()
-            self.log(f'Exception thrown: {e}')
+            self.log(f"Exception thrown: {e}")
 
     # Handle POST requests
     def do_POST(self):
         try:
-            content_length = int(self.headers['Content-Length'])
+            content_length = int(self.headers["Content-Length"])
             post_data = json.loads(self.rfile.read(content_length))
             queryParameters = dict(parse.parse_qsl(parse.urlsplit(self.path).query))
 
-            command = queryParameters.get('command')
-            if command == 'MoveRobot':
-                movementProperty = ['Direction', 'Speed']
+            command = queryParameters.get("command")
+            if command == "MoveRobot":
+                movementProperty = ["Direction", "Speed"]
                 if all(dir in post_data for dir in movementProperty):
                     self.callback.ParseRobotControl(post_data)
 
@@ -228,7 +227,7 @@ class HTTPHelper(BaseHTTPRequestHandler):
         except Exception as e:
             self.send_response(500)
             self.end_headers()
-            self.log(f'Exception thrown: {e}')
+            self.log(f"Exception thrown: {e}")
 
     def send_200(self):
         self.send_response(200)
@@ -237,14 +236,14 @@ class HTTPHelper(BaseHTTPRequestHandler):
     def send_404(self):
         self.send_response(404)
         self.end_headers()
-        self.log(f'URL {self.path} is not implemented')
+        self.log(f"URL {self.path} is not implemented")
 
     def log_message(self, format, *args):
         return
 
     @staticmethod
     def log(*args):
-        print(f'[HTTPServer] {args[0]}')
+        print(f"[HTTPServer] {args[0]}")
 
 
 # ConsoleController Helper
@@ -409,7 +408,7 @@ class ProjectAI:
     # Initializer
     def __init__(self):
         print(
-            '''
+            """
 ----------------------------------------------------
 Welcome to
  ____            _           _        _      ___
@@ -420,7 +419,7 @@ Welcome to
 
 Made with \u2665 By Sadra Shameli
 ----------------------------------------------------
-'''
+"""
         )
         try:
             self.MovingSpeed = 0.0
@@ -432,7 +431,7 @@ Made with \u2665 By Sadra Shameli
             self.FollowMaxDistance = False
 
             # Setup GPIO
-            self.log('Initializing GPIO Pins')
+            self.log("Initializing GPIO Pins")
             self.gpioFactory = PiGPIOFactory()
             self.Motor = Motor(24, 23, pin_factory=self.gpioFactory)
             self.Steering = Servo(18, pin_factory=self.gpioFactory)
@@ -441,12 +440,14 @@ Made with \u2665 By Sadra Shameli
             signal.signal(signal.SIGINT, SignalHandler)
 
             # Setup YDLidar
-            self.log('Initializing YDLidar SDK')
+            self.log("Initializing YDLidar SDK")
             self.lidar = ydlidar.CYdLidar()
             self.lidar.setlidaropt(ydlidar.LidarPropSerialBaudrate, 128000)
             self.lidar.setlidaropt(ydlidar.LidarPropLidarType, ydlidar.TYPE_TRIANGLE)
-            self.lidar.setlidaropt(ydlidar.LidarPropDeviceType, ydlidar.YDLIDAR_TYPE_SERIAL)
-            self.lidar.setlidaropt(ydlidar.LidarPropIgnoreArray, '')
+            self.lidar.setlidaropt(
+                ydlidar.LidarPropDeviceType, ydlidar.YDLIDAR_TYPE_SERIAL
+            )
+            self.lidar.setlidaropt(ydlidar.LidarPropIgnoreArray, "")
             self.lidar.setlidaropt(ydlidar.LidarPropSupportMotorDtrCtrl, True)
             self.lidar.setlidaropt(ydlidar.LidarPropFixedResolution, True)
             self.lidar.setlidaropt(ydlidar.LidarPropSingleChannel, True)
@@ -465,10 +466,14 @@ Made with \u2665 By Sadra Shameli
             self.scan = ydlidar.LaserScan()
 
             # Setup camera
-            self.log(f'Initializing Camera with resolution {CAMERA_WIDTH} * {CAMERA_HEIGHT}')
-            KillProcesses('lsof -t /dev/video0')
+            self.log(
+                f"Initializing Camera with resolution {CAMERA_WIDTH} * {CAMERA_HEIGHT}"
+            )
+            KillProcesses("lsof -t /dev/video0")
             self.camera = Picamera2()
-            self.camera_config = self.camera.create_still_configuration(main={'size': (CAMERA_WIDTH, CAMERA_HEIGHT)})
+            self.camera_config = self.camera.create_still_configuration(
+                main={"size": (CAMERA_WIDTH, CAMERA_HEIGHT)}
+            )
             self.camera.configure(self.camera_config)
             self.camera.start()
             self.InputImage = self.camera.capture_array()
@@ -483,106 +488,121 @@ Made with \u2665 By Sadra Shameli
             Thread(target=self.ConnectController, daemon=True).start()
 
             # Setup numpy
-            numpy.set_printoptions(formatter={'float': lambda x: '{0:0.3f}'.format(x)})
+            numpy.set_printoptions(formatter={"float": lambda x: "{0:0.3f}".format(x)})
 
             # Setup TensorFlow tensors, model and neural network
-            self.log('Initializing TensorFlow')
+            self.log("Initializing TensorFlow")
             self.SetTensorFlow()
 
-            # Setup Webserver
-            self.log('Initializing Webserver')
+            # Setup web server
+            self.log("Initializing web server")
             self.StartWebServer()
 
             # Initialization Finished
-            self.log('Please control the robot via the created webserver or a PS4 or PS5 controller')
-            self.log('Initialization done!')
+            self.log(
+                "Please control the robot via the created web server or a PS4 or PS5 controller"
+            )
+            self.log("Initialization done!")
 
             self.Runtime()
-            self.log('Runtime finished')
+            self.log("Runtime finished")
 
         except Exception as e:
-            self.log(f'Exception thrown: {e}')
+            self.log(f"Exception thrown: {e}")
 
         finally:
-            self.log('Terminating Application')
+            self.log("Terminating Application")
             self.Terminate()
 
-    # Deinitializer
+    # Destructor
     def __del__(self):
-        self.log('Deinitializing')
+        self.log("Destructing ProjectAI")
 
     # Called once application is terminated
     def Terminate(self):
 
         # Cleaning up YDLidar SDK
-        if hasattr(self, 'lidar'):
+        if hasattr(self, "lidar"):
             self.lidar.turnOff()
             self.lidar.disconnecting()
-            self.log('Deinitialized YDLidar SDK')
+            self.log("Destructor YDLidar SDK")
 
         # Cleaning up Webserver
-        if hasattr(self, 'webserver'):
+        if hasattr(self, "webserver"):
             self.webserver.shutdown()
             self.webserver.server_close()
-            self.log('Deinitialized Webserver')
+            self.log("Destructor web server")
 
         # Cleaning up camera
-        if hasattr(self, 'camera'):
+        if hasattr(self, "camera"):
             self.camera.stop()
-            self.log('Deinitialized camera')
+            self.log("Destructor camera")
 
     # Search for YDLidar devices
     def ConnectLidar(self):
 
         portList = ydlidar.lidarPortList().items()
         if len(portList) == 0:
-            self.log('No YDLidar device could be found')
+            self.log("No YDLidar device could be found")
             return False
 
         # Iterate through all YDLidar devices
         for version, port in portList:
             # YDLidar Found
-            self.log(f'YDLidar device has been found - Port: {port}, Version: {version}')
+            self.log(
+                f"YDLidar device has been found - Port: {port}, Version: {version}"
+            )
 
             # Try to Initialize YDLidar SDK
             self.lidar.setlidaropt(ydlidar.LidarPropSerialPort, port)
             if self.lidar.initialize() and self.lidar.turnOn():
                 return True
             else:
-                self.log(f'Failed to connect to YDLidar at {port}')
+                self.log(f"Failed to connect to YDLidar at {port}")
                 return False
 
     # Search for Console Controller
     def ConnectController(self):
         # Iterate through all joystick interfaces
-        address = f'{CONTROLLER_ADDRESS}{0}'
+        address = f"{CONTROLLER_ADDRESS}{0}"
         for idx in range(0, 8):
-            if os.path.exists(f'{CONTROLLER_ADDRESS}{idx}'):
-                address = f'{CONTROLLER_ADDRESS}{idx}'
+            if os.path.exists(f"{CONTROLLER_ADDRESS}{idx}"):
+                address = f"{CONTROLLER_ADDRESS}{idx}"
                 break
 
         # Controller found
-        self.controller = ConsoleController(interface=address, connecting_using_ds4drv=False, callback=self)
+        self.controller = ConsoleController(
+            interface=address, connecting_using_ds4drv=False, callback=self
+        )
         Thread(target=self.controller.listen, args=[sys.maxsize], daemon=True).start()
 
         time.sleep(0.25)
         if self.controller.is_connected:
-            self.log(f'Connected to controller at {address}')
+            self.log(f"Connected to controller at {address}")
             return True
 
-        self.log('No console controller could be found')
+        self.log("No console controller could be found")
         return False
 
     # Start Webserver
     def StartWebServer(self):
 
         # Check whether the ports are already open
-        KillProcesses(f'lsof -t -i:{HTTP_SERVER_PORT};lsof -t -i:8000')
+        KillProcesses(f"lsof -t -i:{HTTP_SERVER_PORT};lsof -t -i:8000")
 
-        self.webserver = HTTPServer((GetIpAddress(), HTTP_SERVER_PORT), functools.partial(HTTPHelper, callback=self))
+        self.webserver = HTTPServer(
+            (GetIpAddress(), HTTP_SERVER_PORT),
+            functools.partial(HTTPHelper, callback=self),
+        )
         Thread(target=self.webserver.serve_forever, daemon=True).start()
-        Thread(target=os.system, args=[f'python3 -m http.server -b {GetIpAddress()}'], daemon=True, ).start()
-        self.log(f'WebServer started at {GetIpAddress()}:{self.webserver.server_address[1]} and {GetIpAddress()}:8000')
+        Thread(
+            target=os.system,
+            args=[f"python3 -m http.server -b {GetIpAddress()}"],
+            daemon=True,
+        ).start()
+        self.log(
+            f"WebServer started at {GetIpAddress()}:{self.webserver.server_address[1]} and {GetIpAddress()}:8000"
+        )
 
     # Moving Robot
     def MoveForward(self, speed):
@@ -618,49 +638,56 @@ Made with \u2665 By Sadra Shameli
 
     # Extract robot control data from POST body
     def ParseRobotControl(self, post_data):
-        dir = post_data.get('Direction')
-        self.MovingSpeed = MapRange(post_data.get('Speed'), 0, 100, 0, 1)
+        dir = post_data.get("Direction")
+        self.MovingSpeed = MapRange(post_data.get("Speed"), 0, 100, 0, 1)
 
-        if 'forward' in dir:
+        if "forward" in dir:
             self.MoveForward(self.MovingSpeed)
-        elif 'backward' in dir:
+        elif "backward" in dir:
             self.MoveBackward(self.MovingSpeed)
-        elif 'left' in dir:
+        elif "left" in dir:
             self.TurnLeft()
-        elif 'right' in dir:
+        elif "right" in dir:
             self.TurnRight()
-        elif 'stop' in dir:
+        elif "stop" in dir:
             self.Stop()
             self.TurnAhead()
 
     # Generates an image
     def CaptureImage(self):
         fileName = datetime.now().strftime(DATETIME_FORMATE)
-        self.camera.capture_file(f'{IMAGES_FOLDER}/{fileName}.jpg')
+        self.camera.capture_file(f"{IMAGES_FOLDER}/{fileName}.jpg")
 
     # Correct scan angle based on sensor rotation
     def CorrectScanAngle(self, angle):
         return angle - HEADING_AHEAD
 
     # Filter scans based on angle, returns a distance
-    def FilterScansAngle(self, angle):        
-        results = [MapRange(scan.range, LIDAR_RANGE_MIN, LIDAR_RANGE_MAX, 0.0, 1.0) for scan in self.scan.points
-                   if math.isclose(scan.angle, angle, rel_tol=DEFAULT_APERTURE)]
+    def FilterScansAngle(self, angle):
+        results = [
+            MapRange(scan.range, LIDAR_RANGE_MIN, LIDAR_RANGE_MAX, 0.0, 1.0)
+            for scan in self.scan.points
+            if math.isclose(scan.angle, angle, rel_tol=DEFAULT_APERTURE)
+        ]
         if len(results):
             return numpy.mean(results)
         return 0.0
 
     # Filter scans based on maximum distance, returns a scan
     def FilterScansMaxDistance(self):
-        results = [scan for scan in self.scan.points if HEADING_LEFT <= scan.angle <= HEADING_RIGHT]
+        results = [
+            scan
+            for scan in self.scan.points
+            if HEADING_LEFT <= scan.angle <= HEADING_RIGHT
+        ]
         return max(results, key=lambda scan: scan.range)
 
     # Save Nodes for the A.I. to file
     def SaveNodes(self):
         if USE_CAMERA:
-            with open(AI_IMAGE_NODES_FILE, 'w') as file:
+            with open(AI_IMAGE_NODES_FILE, "w") as file:
                 for node in self.ImageNodes:
-                    file.write(f'{node}\n')
+                    file.write(f"{node}\n")
 
         else:
             numpy.save(AI_DISTANCE_NODES_FILE, numpy.asarray(self.DistanceNodes))
@@ -690,12 +717,12 @@ Made with \u2665 By Sadra Shameli
         # Get input and output tensors.
         self.input_details = self.tfInterpreter.get_input_details()
         self.output_details = self.tfInterpreter.get_output_details()
-        self.input_shape = self.input_details[0]['shape']
+        self.input_shape = self.input_details[0]["shape"]
 
     def ProcessImage(self, image):
         image = cv2.resize(image, (250, 250))
         height, _, _ = image.shape
-        image = image[int(height/2):, :, :]
+        image = image[int(height / 2) :, :, :]
         image = cv2.GaussianBlur(image, (5, 5), 0)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         image = cv2.Canny(image, 50, 100)
@@ -717,19 +744,62 @@ Made with \u2665 By Sadra Shameli
                     self.InputImage = self.camera.capture_array()
                     self.InputImage = self.ProcessImage(self.InputImage)
 
-                    self.InputImage = numpy.array([self.InputImage], dtype=numpy.float32)
-                    self.tfInterpreter.set_tensor(self.input_details[0]['index'], self.InputImage)
+                    self.InputImage = numpy.array(
+                        [self.InputImage], dtype=numpy.float32
+                    )
+                    self.tfInterpreter.set_tensor(
+                        self.input_details[0]["index"], self.InputImage
+                    )
                     self.tfInterpreter.invoke()
-                    tensor = self.tfInterpreter.get_tensor(self.output_details[0]['index'])
+                    tensor = self.tfInterpreter.get_tensor(
+                        self.output_details[0]["index"]
+                    )
                     node = tensor[0]
                     # print(node)
-                    
+
                     heading = MapRange(node[0], -1.0, 1.0, HEADING_LEFT, HEADING_RIGHT)
                     self.TurnRadian(heading)
-                    #self.MoveForward(node[1])
+                    # self.MoveForward(node[1])
 
                 else:
-                    distanceNodes = numpy.array([
+                    distanceNodes = numpy.array(
+                        [
+                            [
+                                self.FilterScansAngle(HEADING_LEFT),
+                                self.FilterScansAngle(HEADING_HIGHERLEFT),
+                                self.FilterScansAngle(HEADING_TOPLEFT),
+                                self.FilterScansAngle(HEADING_TOPRIGHT),
+                                self.FilterScansAngle(HEADING_HIGHERRIGHT),
+                                self.FilterScansAngle(HEADING_RIGHT),
+                            ]
+                        ],
+                        dtype=numpy.float32,
+                    )
+
+                    self.tfInterpreter.set_tensor(
+                        self.input_details[0]["index"], distanceNodes
+                    )
+                    self.tfInterpreter.invoke()
+                    tensor = self.tfInterpreter.get_tensor(
+                        self.output_details[0]["index"]
+                    )
+                    node = tensor[0]
+
+                    heading = MapRange(node[1], -1.0, 1.0, HEADING_LEFT, HEADING_RIGHT)
+                    self.TurnRadian(heading)
+                    # self.MoveForward(node[0])
+
+            if self.RecordNodes:
+                if USE_CAMERA:
+                    self.camera.capture_file(
+                        f"{AI_FOLDER_IMAGES}/{self.ImageIndex}.jpg"
+                    )
+                    self.ImageNodes.append(
+                        f"Images/img{self.ImageIndex}.jpg, {self.MovingHeading}, {self.MovingSpeed}"
+                    )
+                    self.ImageIndex += 1
+                else:
+                    self.DistanceNodes.append(
                         [
                             self.FilterScansAngle(HEADING_LEFT),
                             self.FilterScansAngle(HEADING_HIGHERLEFT),
@@ -737,42 +807,21 @@ Made with \u2665 By Sadra Shameli
                             self.FilterScansAngle(HEADING_TOPRIGHT),
                             self.FilterScansAngle(HEADING_HIGHERRIGHT),
                             self.FilterScansAngle(HEADING_RIGHT),
-                        ]], dtype=numpy.float32)
-
-                    self.tfInterpreter.set_tensor(self.input_details[0]['index'], distanceNodes)
-                    self.tfInterpreter.invoke()
-                    tensor = self.tfInterpreter.get_tensor(self.output_details[0]['index'])
-                    node = tensor[0]
-
-                    heading = MapRange(node[1], -1.0, 1.0, HEADING_LEFT, HEADING_RIGHT)
-                    self.TurnRadian(heading)
-                    #self.MoveForward(node[0])
-
-            if self.RecordNodes:
-                if USE_CAMERA:
-                    self.camera.capture_file(f'{AI_FOLDER_IMAGES}/{self.ImageIndex}.jpg')
-                    self.ImageNodes.append(f'Images/img{self.ImageIndex}.jpg, {self.MovingHeading}, {self.MovingSpeed}')
-                    self.ImageIndex += 1
-                else:
-                    self.DistanceNodes.append([
-                        self.FilterScansAngle(HEADING_LEFT),
-                        self.FilterScansAngle(HEADING_HIGHERLEFT),
-                        self.FilterScansAngle(HEADING_TOPLEFT),
-                        self.FilterScansAngle(HEADING_TOPRIGHT),
-                        self.FilterScansAngle(HEADING_HIGHERRIGHT),
-                        self.FilterScansAngle(HEADING_RIGHT),
-                    ])
-                    self.InputNodes.append([self.MovingSpeed, self.MovingHeading / math.pi])
+                        ]
+                    )
+                    self.InputNodes.append(
+                        [self.MovingSpeed, self.MovingHeading / math.pi]
+                    )
 
             if self.FollowMaxDistance:
                 scan = self.FilterScansMaxDistance()
                 self.TurnRadian(self.CorrectScanAngle(scan.angle))
-                
+
             time.sleep(0.75)
 
     @staticmethod
     def log(*args):
-        print(f'[ProjectAI] {args[0]}')
+        print(f"[ProjectAI] {args[0]}")
 
 
 # Main Entrance

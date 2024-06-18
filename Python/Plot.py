@@ -20,7 +20,7 @@ class ProjectAI:
     # Initializer
     def __init__(self):
         print(
-            '''
+            """
 ----------------------------------------------------
 Welcome to
  ____            _           _        _      ___
@@ -31,19 +31,21 @@ Welcome to
 
 Made with \u2665 By Sadra Shameli
 ----------------------------------------------------
-'''
+"""
         )
         try:
             # Setup Signal Handler to catch events
             signal.signal(signal.SIGINT, SignalHandler)
 
             # Setup YDLidar
-            self.log('Initializing YDLidar SDK')
+            self.log("Initializing YDLidar SDK")
             self.lidar = ydlidar.CYdLidar()
             self.lidar.setlidaropt(ydlidar.LidarPropSerialBaudrate, 128000)
             self.lidar.setlidaropt(ydlidar.LidarPropLidarType, ydlidar.TYPE_TRIANGLE)
-            self.lidar.setlidaropt(ydlidar.LidarPropDeviceType, ydlidar.YDLIDAR_TYPE_SERIAL)
-            self.lidar.setlidaropt(ydlidar.LidarPropIgnoreArray, '')
+            self.lidar.setlidaropt(
+                ydlidar.LidarPropDeviceType, ydlidar.YDLIDAR_TYPE_SERIAL
+            )
+            self.lidar.setlidaropt(ydlidar.LidarPropIgnoreArray, "")
             self.lidar.setlidaropt(ydlidar.LidarPropSupportMotorDtrCtrl, True)
             self.lidar.setlidaropt(ydlidar.LidarPropFixedResolution, True)
             self.lidar.setlidaropt(ydlidar.LidarPropSingleChannel, True)
@@ -71,54 +73,56 @@ Made with \u2665 By Sadra Shameli
             self.lidar_polar.autoscale_view(True, True, True)
 
             # Initialization Finished
-            self.log('Initialization done!')
+            self.log("Initialization done!")
 
             self.Runtime()
-            self.log('Runtime finished')
+            self.log("Runtime finished")
 
         except Exception as e:
-            self.log(f'Exception thrown: {e}')
+            self.log(f"Exception thrown: {e}")
 
         finally:
-            self.log('Terminating Application')
+            self.log("Terminating Application")
             self.Terminate()
 
     # Deinitializer
     def __del__(self):
-        self.log('Deinitializing')
+        self.log("Deinitializing")
 
     # Called once application is terminated
     def Terminate(self):
 
         # Cleaning up Animation
         plt.close()
-        self.log('Deinitialized Animation')
+        self.log("Deinitialized Animation")
 
         # Cleaning up YDLidar SDK
-        if hasattr(self, 'lidar'):
+        if hasattr(self, "lidar"):
             self.lidar.turnOff()
             self.lidar.disconnecting()
-            self.log('Deinitialized YDLidar SDK')
+            self.log("Deinitialized YDLidar SDK")
 
     # Search for YDLidar devices
     def ConnectLidar(self):
 
         portList = ydlidar.lidarPortList().items()
         if len(portList) == 0:
-            self.log('No YDLidar device could be found')
+            self.log("No YDLidar device could be found")
             return False
 
         # Iterate through all YDLidar devices
         for version, port in portList:
             # YDLidar Found
-            self.log(f'YDLidar device has been found - Port: {port}, Version: {version}')
+            self.log(
+                f"YDLidar device has been found - Port: {port}, Version: {version}"
+            )
 
             # Try to Initialize YDLidar SDK
             self.lidar.setlidaropt(ydlidar.LidarPropSerialPort, port)
             if self.lidar.initialize() and self.lidar.turnOn():
                 return True
             else:
-                self.log(f'Failed to connect to YDLidar at {port}')
+                self.log(f"Failed to connect to YDLidar at {port}")
                 return False
 
     # Plot the lidar output
@@ -132,9 +136,10 @@ Made with \u2665 By Sadra Shameli
                 range.append(point.range)
                 intensity.append(point.intensity)
             self.lidar_polar.clear()
-            self.lidar_polar.scatter(angle, range, c=intensity, cmap='hsv', alpha=0.95)
+            self.lidar_polar.scatter(angle, range, c=intensity, cmap="hsv", alpha=0.95)
 
             # Runtime
+
     def Runtime(self):
         while self._Running:
             anim = animation.FuncAnimation(self.figure, self.Animate, interval=50)
@@ -143,7 +148,7 @@ Made with \u2665 By Sadra Shameli
 
     @staticmethod
     def log(*args):
-        print(f'[ProjectAI] {args[0]}')
+        print(f"[ProjectAI] {args[0]}")
 
 
 # Main Entrance
