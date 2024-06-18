@@ -4,7 +4,7 @@ The purpose of this project is to create an autonomous self-driving robot, which
 Its inspiration originates from being a big fan of Elon Musk, Tesla and its technology.
 This project is mainly created for PWS (profielwerkstuk) using our own specific hardware, but it can be replicated by the user to work on their hardware as well.
 
-![ProjectAI](Documentation/Pictures/DSC0568.jpg "ProjectAI")
+![ProjectAI](Documentation/Images/ProjectAI.jpg "ProjectAI")
 
 ## Features
 
